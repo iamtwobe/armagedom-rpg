@@ -1,0 +1,12 @@
+venv/
+planning.txt
+__pycache__
+src/app/users/*.db
+!src/bot/static
+tests.py
+__database_handler.py
+.flask_s_key.dat
+src/app/static/profile_pictures/*
+!static/profile_pictures/
+!src/app/static/profile_pictures/default_user_image.jpg
+.env

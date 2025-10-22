@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block body %}
+<style>
+.form-check-input:checked {
+  background-color: #2e343a !important;  /* verde */
+  border-color: #2e343a !important;
+}
+
+.form-check-input:focus {
+  box-shadow: 0 0 0 0.2rem rgba(68, 68, 68, 0.664);
+  border-color: #444e57;
+}
+
+.form-check-input:active {
+  background-color: #ffffff !important;
+}
+</style>
+
+    <div class="container mb-5">
+        <div class="row">
+            <div class="col letrabranca">
+                <form method="POST" action="" class="p-3 border-3 border border-light border-opacity-50 mt-5 rounded bg-secondary bg-opacity-10">
+                    {{ form_login.csrf_token }}
+                    <legend class="text-light text-opacity-75 mt-2 me-5 pb-2">Login</legend>
+                    <fieldset class="mt-5 text-light text-opacity-75">
+                        <div class="form-group mb-2 m-2">
+                            {{ form_login.account.label(class="form-label") }}
+
+                            {% if form_login.account.errors %}
+                                {{ form_login.account(class="form-control is-invalid", placeholder="Username") }}
+                            <div class="invalid-feedback">
+                                {% for erro in form_login.account.errors %}
+                                    {{ erro }}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                                {{ form_login.account(class="form-control", placeholder="Username") }}
+                            {% endif %}
+
+                            
+                        </div>
+                        <div class="form-group mb-2 m-2">
+                            {{ form_login.password.label(class="form-label") }}
+
+                            {% if form_login.password.errors %}
+                                {{ form_login.password(class="form-control", placeholder="Sua senha") }}
+                            <div class="invalid-feedback">
+                                {% for erro in form_login.password.errors %}
+                                    {{ erro }}
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                                {{ form_login.password(class="form-control", placeholder="Sua senha") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group m-2">
+                            {{ form_login.remember_data.label(class="form-label") }}
+                            {{ form_login.remember_data(class="form-check-input") }}
+                            <a class="form-label btn-secondary m-2" style="color: #6f808f" href="{{ url_for('signup') }}">Não tem uma conta?</a>
+                        </div>
+                    </fieldset>
+                    {{ form_login.submit_button_login(class="btn btn-secondary m-2") }}
+                </form>
+            </div>
+        </div>
+
+{% endblock %}

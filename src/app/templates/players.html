@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+    <div class="container">
+        <h1 class="py-3">Players</h1>
+        <br>
+        <div class="row row-cols-md-5 g-4">
+            {% for user in users_list %}
+                {% if not user.admin_perms %}
+                    <div class="col col-2 mb-4">
+                        <div class="card h-100 w-100 bg-secondary">
+                            <img src="{{ url_for('static', filename='profile_pictures/{}'.format(user.profile_picture)) }}" class="card-img-top" height="175" alt="{{ user.profile_picture }}">
+                            <div class="card-body">
+                            <h5 class="card-title text-center justify-content-center">{{ user.username }}
+                                <h5 class="card-title text-center text-dark border border-black rounded-pill"
+                                style="--bs-border-opacity: .75; --bs-text-opacity: .8">Player</h5>
+                            </h5>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col col-2 mb-4">
+                        <div class="card h-100 w-100 bg-secondary">
+                            <img src="{{ url_for('static', filename='profile_pictures/{}'.format(user.profile_picture)) }}" class="card-img-top" height="175" alt="{{ user.profile_picture }}">
+                            <div class="card-body">
+                            <h5 class="card-title text-center justify-content-center">{{ user.username }}
+                                <h5 class="card-title text-center text-danger border border-black rounded-pill" 
+                                    style="--bs-border-opacity: .75; --bs-text-opacity: .8">Mestre</h5></h5>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}
