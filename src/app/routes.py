@@ -3,10 +3,11 @@ from src.app import app, users_database, bcrypt
 from src.app.models import User, Ficha
 from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormCriarFicha
 from flask_login import login_user, logout_user, login_required, current_user
+from src.utils.send_dm_discord import send_dm_to_user
+from datetime import datetime, timedelta, UTC
 from PIL import Image
 import os
-
-
+ 
 
 @app.route('/')
 def home():
@@ -120,11 +121,27 @@ def ficha():
     if current_user.id not in Ficha.query.all():
         return redirect(url_for('criarficha'))
 
+@app.route('/verify', methods=['GET', 'POST'])
+def verify():
+    if current_user.discord_id:
+        flash('Você já tem um discord configurado.', 'alert-warning')
+        return redirect(url_for('home'))
+    
+    code = send_dm_to_user(331106517212463104, 'Seu código de acesso é:')
+    current_user.verification_code = code
+    current_user.verification_expires = datetime.now(UTC) + timedelta(minutes=10)
+    users_database.session.commit()
+
+    return render_template('discord_verify.html')
+
 @app.route('/criarficha', methods=['GET', 'POST'])
 @login_required
 def criarficha():
     if current_user.id in Ficha.query.all():
-        return redirect(url_for('home'))
+        return redirect(url_for('ficha'))
+    if not current_user.discord_id:
+        flash('Por favor, verifique seu discord primeiro.', 'alert-warning')
+        return redirect(url_for('verify'))
     form = FormCriarFicha()
     if form.validate_on_submit():
         ficha = Ficha(

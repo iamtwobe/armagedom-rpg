@@ -19,7 +19,8 @@ command_list = [
     test_commands_start,
     mod_user_start, 
     help_commands_start,
-    config_commands_start
+    config_commands_start,
+    user_commands_start
 ]
 
 for command in command_list:
@@ -62,11 +63,10 @@ async def restart(ctx):
 # Command doesn't exists
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, bot_commands.CommandNotFound):
+    if isinstance(error, commands.CommandNotFound):
         await ctx.send(f'{ctx.author.mention}, o comando `{ctx.message.content}` não foi encontrado.')
 
 
-# Detectar mensagens
 @bot.event
 async def on_message(message):
     if message.content.startswith("tchubas"):
@@ -97,3 +97,9 @@ async def change_status(ctx, *, msg: str = None):
 @bot.command()
 async def ping(ctx):
     await ctx.send(f'Pong! `{round(bot.latency * 1000)}ms`')
+
+
+async def send_dm_to_user(user_id: int, message: str):
+    user = await bot.fetch_user(user_id)
+    await user.send(message)
+    print(f"Mensagem enviada para {user.name} ({user.id})")
