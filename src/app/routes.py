@@ -59,7 +59,7 @@ def players():
 def save_image(old_image, image):
     if old_image != 'default_user_image.jpg':
         old_path = os.path.join(app.root_path, 'static/profile_pictures', old_image)
-        if os.old_path.exists(old_path):
+        if os.path.exists(old_path):
             os.remove(old_path)
     name, extension = os.path.splitext(image.filename)
     extension = extension.lower()
