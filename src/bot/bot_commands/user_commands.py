@@ -16,12 +16,3 @@ def user_commands_start(_bot):
     @myid.error
     async def myid_error(ctx, error):
         await ctx.send(f"Erro {error}")
-
-    @bot.command(hidden=True)
-    async def test_cmd(ctx, user_id):
-        user = await bot.fetch_user(user_id)
-        await user.send("teste")
-    
-    @test_cmd.error
-    async def test_cmd_error(ctx, error):
-        await ctx.send(f"Erro {error}")

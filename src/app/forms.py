@@ -46,7 +46,11 @@ class FormEditProfile(FlaskForm):
             usern = User.query.filter_by(username=username.data).first()
             if usern:
                 raise ValidationError('Esse nome de usuário já existe.')
-            
+
+class FormLinkDiscord(FlaskForm):
+    discord_id = StringField('ID do Discord', validators=[DataRequired(), Length(min=17, max=25)])
+    submit_button_link_discord = SubmitField('Confirmar')
+
 class FormCriarFicha(FlaskForm):
     nome = StringField('Nome', validators=[DataRequired(), Length(1, 30)])
     submit_button_ficha = SubmitField('Criar')

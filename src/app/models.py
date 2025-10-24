@@ -17,7 +17,7 @@ class User(users_database.Model, UserMixin):
     discord_username = users_database.Column(users_database.String(32), nullable=True)
     
     verification_code = users_database.Column(users_database.String(12), nullable=True)
-    verification_expires = users_database.Column(users_database.String, nullable=True)
+    verification_expires = users_database.Column(users_database.DateTime, nullable=True)
 
     admin_perms = users_database.Column(users_database.Boolean, default=False, nullable=False)
 

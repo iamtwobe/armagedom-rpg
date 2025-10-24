@@ -1,13 +1,13 @@
 from flask import render_template, request, flash, redirect, url_for
 from src.app import app, users_database, bcrypt
 from src.app.models import User, Ficha
-from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormCriarFicha
+from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormCriarFicha, FormLinkDiscord
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
 from datetime import datetime, timedelta, UTC
 from PIL import Image
 import os
- 
+
 
 @app.route('/')
 def home():
@@ -127,12 +127,17 @@ def verify():
         flash('Você já tem um discord configurado.', 'alert-warning')
         return redirect(url_for('home'))
     
-    code = send_dm_to_user(331106517212463104, 'Seu código de acesso é:')
-    current_user.verification_code = code
-    current_user.verification_expires = datetime.now(UTC) + timedelta(minutes=10)
-    users_database.session.commit()
+    form_verify_discord = FormLinkDiscord()
+    if form_verify_discord.validate_on_submit():
+        code = send_dm_to_user(form_verify_discord.discord_id.data, 'Seu código de acesso é:')
+        current_user.verification_code = code
+        current_user.verification_expires = datetime.now(UTC) + timedelta(minutes=10)
+        users_database.session.commit()
 
-    return render_template('discord_verify.html')
+    if datetime.now(UTC) > current_user.verification_expires:
+        print('sifodias')
+
+    return render_template('discord_verify.html', form_verify_discord=form_verify_discord)
 
 @app.route('/criarficha', methods=['GET', 'POST'])
 @login_required
