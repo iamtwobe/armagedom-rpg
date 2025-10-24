@@ -15,7 +15,7 @@ class FormSignup(FlaskForm):
     def validate_password(self, password):
         password = password.data
         letters = 'abcdefghijklmnopqrstuvwxyz'
-        if any(i in letters for i in password) == False:
+        if any(i in letters for i in password.lower()) == False:
             raise ValidationError('Sua senha precisa conter uma letra.')
         if any(char.isdigit() for char in password) == False:
             raise ValidationError('Sua senha precisa de pelo menos um número')
@@ -36,6 +36,7 @@ class FormLogin(FlaskForm):
 
 class FormEditProfile(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired(), Length(min= 4, max= 12)])
+    password = PasswordField('Senha', validators=[DataRequired(), Length(min=8, max=48)])
     profile_picture = FileField('Atualizar foto de perfil', validators=[FileAllowed(['jpg', 'png', 'webp', 'jpeg', 'gif'])])
     submit_button_edit_profile = SubmitField('Confirmar Edição')
 
@@ -46,6 +47,14 @@ class FormEditProfile(FlaskForm):
             usern = User.query.filter_by(username=username.data).first()
             if usern:
                 raise ValidationError('Esse nome de usuário já existe.')
+                
+    def validate_password(self, password):
+        password = password.data
+        letters = 'abcdefghijklmnopqrstuvwxyz'
+        if any(i in letters for i in password.lower()) == False:
+            raise ValidationError('Sua senha precisa conter uma letra.')
+        if any(char.isdigit() for char in password) == False:
+            raise ValidationError('Sua senha precisa de pelo menos um número')
 
 class FormLinkDiscord(FlaskForm):
     discord_id = StringField('ID do Discord', validators=[DataRequired(), Length(min=17, max=25)])
