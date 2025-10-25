@@ -1,10 +1,10 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, jsonify
 from src.app import app, users_database, bcrypt
 from src.app.models import User, Ficha
 from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormCriarFicha, FormLinkDiscord
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 from PIL import Image
 import os
 
@@ -132,12 +132,35 @@ def verify():
     form_verify_discord = FormLinkDiscord()
     if form_verify_discord.validate_on_submit():
         code = send_dm_to_user(form_verify_discord.discord_id.data, 'Seu código de acesso é:')
+        if code.startswith('error'):
+            code = code[5:]
+            if code == 'offline':
+                return jsonify({"error": "O Bot está offline no momento, tente novamente mais tarde."}), 400
+            return jsonify({"error": code})
         current_user.verification_code = code
-        current_user.verification_expires = datetime.now(UTC) + timedelta(minutes=10)
+        current_user.verification_expires = datetime.now() + timedelta(minutes=10)
         users_database.session.commit()
+        return jsonify({"success": True, "message": "Seu código de acesso foi enviado"}), 200
 
-    if datetime.now(UTC) > current_user.verification_expires:
-        print('None')
+    else:
+        if form_verify_discord.errors:
+            for field, errors in form_verify_discord.errors.items():
+                for error in errors:
+                    if error == 'The CSRF token is missing.':
+                        continue
+                    return jsonify({"error": error}), 400
+
+    if request.is_json:
+        data = request.get_json()
+        discord_id = data.get("discord_id")
+        code = data.get("verification_code")
+        if code == current_user.verification_code and datetime.now() < current_user.verification_expires:
+            current_user.discord_id = discord_id
+            users_database.session.commit()
+            flash('Discord configurado com sucesso!', 'alert-success')
+            return jsonify({"redirect": url_for('home')}), 200
+        else:
+            return jsonify({"error": "Código inválido ou expirado"}), 400
 
     return render_template('discord_verify.html', form_verify_discord=form_verify_discord)
 
@@ -159,4 +182,4 @@ def criarficha():
         users_database.commit()
         flash('Ficha criada com sucesso', 'alert-success')
         return redirect(url_for('ficha/'))
-    return render_template('ficha.html')
+    return render_template('ficha/ficha.html')

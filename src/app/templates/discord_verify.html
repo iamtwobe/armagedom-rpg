@@ -1,13 +1,130 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block body %}
-    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-        <div class="text-center">
-            <div class="p-3 rounded-5 shadow-sm" style="background-image: url('https://media.istockphoto.com/id/583816756/photo/realistic-background-wallpaper-texture.jpg?s=612x612&w=0&k=20&c=33rY1jt0jYZaleaaiJ-L8ylz_KOrNenQg9fjYDWf4kM=')">
-                <h1 class="display-3 text-light font-weight-bold" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-family: 'Poppins', sans-serif;">
-                    Verify account
-                </h1>
-            </div>
-        </div>
-    </div>
+<div class="container mt-5">
+
+  <!-- Tela 1: enviar ID -->
+  <div id="step1">
+    <h4>Verificação do Discord</h4>
+    <p>Informe o seu ID do Discord para receber o código de verificação.</p>
+    <p>Caso você não saiba seu ID, digite "a!meuid" no chat do servidor e depois checar o privado.</p>
+
+    <form id="discordForm" method="post" action="{{ url_for('verify') }}">
+      {{ form_verify_discord.hidden_tag() }}
+      <div class="mb-3">
+        {{ form_verify_discord.discord_id.label(class="form-label") }}
+        {{ form_verify_discord.discord_id(class="form-control", placeholder="Ex: 123456789012345678", inputmode="numeric") }}
+        <div class="invalid-feedback">Apenas números são permitidos no ID do Discord.</div>
+      </div>
+      <button type="submit" class="btn btn-primary">Enviar código</button>
+    </form>
+
+    <div id="responseMessage" class="mt-3"></div>
+  </div>
+
+  <!-- Tela 2: confirmar código -->
+  <div id="step2" style="display: none;">
+    <h4>Confirmação</h4>
+    <p>Insira o código que você recebeu no Discord.</p>
+
+    <form id="codeForm" method="post" action="{{ url_for('verify') }}">
+      <div class="mb-3">
+        <label for="verification_code" class="form-label">Código de verificação</label>
+        <input type="text" class="form-control" id="verification_code" name="verification_code" 
+               maxlength="24" pattern="[A-Fa-f0-9]{24}" inputmode="text" required>
+        <div class="invalid-feedback">O código deve ter 24 caracteres hexadecimais.</div>
+      </div>
+      <button type="submit" class="btn btn-success">Confirmar</button>
+    </form>
+
+    <div id="codeResponse" class="mt-3"></div>
+  </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const discordForm = document.getElementById("discordForm");
+    const codeForm = document.getElementById("codeForm");
+    const step1 = document.getElementById("step1");
+    const step2 = document.getElementById("step2");
+    const responseMessage = document.getElementById("responseMessage");
+    const discordInput = document.getElementById("discord_id");
+
+    // Validação em tempo real: apenas números para Discord ID
+    discordInput.addEventListener("input", () => {
+        const invalidChars = /[^0-9]/g;
+        if (invalidChars.test(discordInput.value)) {
+            discordInput.value = discordInput.value.replace(invalidChars, "");
+            discordInput.classList.add("is-invalid");
+        } else {
+            discordInput.classList.remove("is-invalid");
+        }
+    });
+
+    // Envio do ID do Discord (AJAX)
+    discordForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const formData = new FormData(discordForm);
+
+        try {
+            const response = await fetch("{{ url_for('verify') }}", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                // sucesso, passa para a etapa 2
+                step1.style.display = "none";
+                step2.style.display = "block";
+            } else if (data.error) {
+                responseMessage.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            } else {
+                responseMessage.innerHTML = `<div class="alert alert-danger">Falha ao enviar o código.</div>`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            responseMessage.innerHTML = `<div class="alert alert-danger">Erro de comunicação com o servidor.</div>`;
+        }
+    });
+
+    // Envio do código de verificação (AJAX)
+    codeForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const discordId = discordInput.value;
+        const verificationCode = document.getElementById("verification_code").value;
+
+        try {
+            const response = await fetch("{{ url_for('verify') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    discord_id: discordId,
+                    verification_code: verificationCode
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.redirect) {
+                // Código correto → redireciona para a URL do backend e exibe flash
+                window.location.href = data.redirect;
+            } else {
+                // Código inválido ou expirado
+                document.getElementById("codeResponse").innerHTML =
+                    `<div class="alert alert-danger">${data.error || "Código inválido ou expirado."}</div>`;
+            }
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById("codeResponse").innerHTML =
+                `<div class="alert alert-danger">Erro de comunicação com o servidor.</div>`;
+        }
+    });
+});
+</script>
+
 {% endblock %}
