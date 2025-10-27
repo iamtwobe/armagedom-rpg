@@ -118,12 +118,9 @@ def edit_profile():
     profile_picture = url_for('static', filename=f'profile_pictures/{current_user.profile_picture}')
     return render_template('profile_edit.html', profile_picture=profile_picture, form=form)
 
-@app.route('/ficha', methods=['GET', 'POST'])
-def ficha():
-    if current_user.id not in Ficha.query.all():
-        return redirect(url_for('criarficha'))
 
 @app.route('/verify', methods=['GET', 'POST'])
+@login_required
 def verify():
     if current_user.discord_id:
         flash('Você já tem um discord configurado.', 'alert-warning')
@@ -172,7 +169,9 @@ def criarficha():
     if not current_user.discord_id:
         flash('Por favor, verifique seu discord primeiro.', 'alert-warning')
         return redirect(url_for('verify'))
+    
     form = FormCriarFicha()
+
     if form.validate_on_submit():
         ficha = Ficha(
             nome_personagem=form.nome.data, 
@@ -182,4 +181,39 @@ def criarficha():
         users_database.commit()
         flash('Ficha criada com sucesso', 'alert-success')
         return redirect(url_for('ficha/'))
+    
     return render_template('ficha/ficha.html')
+
+@app.route('/ficha', methods=['GET'])
+@login_required
+def ficha_load():
+    if current_user.ficha is None:
+        return redirect(url_for('criarficha'))
+    
+    return redirect(url_for('ficha', id_ficha=current_user.ficha.uuid))
+
+@app.route('/ficha/<string:id_ficha>', methods=['GET', 'POST'])
+@login_required
+def ficha_view(id_ficha):
+    ficha = Ficha.query.filter_by(id_ficha=id_ficha).first_or_404()
+    if not ficha.visible and ficha.user_id != current_user.id and not current_user.is_admin:
+        flash('Você não tem permissão para acessar essa ficha.', 'alert-danger')
+        return redirect(url_for('home'))
+    
+    editable = ficha.user_id == current_user.id or current_user.is_admin
+
+    if request.method == 'POST' and editable:
+        ficha.nome_personagem = request.form.get('nome_personagem')
+        users_database.session.commit()
+        flash('Ficha atualizada com sucesso.', 'alert-success')
+        return redirect(url_for('ficha_view', id_ficha=id_ficha))
+
+    return render_template('ficha.html', ficha=ficha, editable=editable)
+
+@app.route('/admin/fichas/<int:id>')
+@login_required
+def admin_ficha(id):
+    if not current_user.is_admin:
+        return redirect(url_for('home'))
+    ficha = Ficha.query.get_or_404(id)
+    return render_template('admin_ficha.html', ficha=ficha)

@@ -1,5 +1,6 @@
 from src.app import users_database, login_manager
 from flask_login import UserMixin
+import uuid
 
 
 @login_manager.user_loader
@@ -19,9 +20,9 @@ class User(users_database.Model, UserMixin):
     verification_code = users_database.Column(users_database.String(12), nullable=True)
     verification_expires = users_database.Column(users_database.DateTime, nullable=True)
 
-    admin_perms = users_database.Column(users_database.Boolean, default=False, nullable=False)
+    is_admin = users_database.Column(users_database.Boolean, default=False, nullable=False)
 
-    fichas = users_database.relationship('Ficha', back_populates='user', cascade='all, delete-orphan', uselist=False)
+    ficha = users_database.relationship('Ficha', back_populates='user', cascade='all, delete-orphan', uselist=False)
 
 
 
@@ -29,6 +30,9 @@ class Ficha(users_database.Model):
     __tablename__ = 'fichas'
 
     id = users_database.Column(users_database.Integer, primary_key=True)
+    uuid = users_database.Column(users_database.String(36), unique=True, default=lambda: str(uuid.uuid4()))
+    visible = users_database.Column(users_database.Boolean, default=False, nullable=False)
+
     nome = users_database.Column(users_database.String(64), nullable=False)
 
     nivel = users_database.Column(users_database.SmallInteger, default=1, nullable=False)
