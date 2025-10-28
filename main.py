@@ -1,3 +1,4 @@
+from src.utils.args import get_args
 from src.app import app
 from src.bot import bot
 from threading import Thread
@@ -9,14 +10,16 @@ import os
 
 load_dotenv()
 
-def run_gunicorn():
+def run_gunicorn(port: int):
     global gunicorn_process
     gunicorn_process = subprocess.Popen([
         "gunicorn",
         "-w", "1",
-        "-b", "127.0.0.1:8000",
-        "--reload",
-        "main:app"
+        "-b", f"127.0.0.1:{port}",
+        "--reload", "main:app",
+        "--access-logfile", "-",
+        "--logger-class", "src.utils.gunicorn_logger.ColorLogger",
+        "--access-logformat", '%(h)s - - %(t)s "%(r)s" %(s)s'
     ])
 
 def shutdown_gunicorn():
@@ -61,13 +64,16 @@ def run_input():
                 break
 
 if __name__ == "__main__":
-    debug = os.getenv("DEBUG", "False").lower() in ("1", "true")
+    _args = get_args()
+
+    debug = _args.debug
+    port = _args.port
 
     match debug:
         case True:
-            flask_thread = Thread(target=app.run, kwargs={'debug': True, 'use_reloader': False, 'port': 8001})
+            flask_thread = Thread(target=app.run, kwargs={'debug': True, 'use_reloader': False, 'port': port})
         case False:
-            flask_thread = Thread(target=run_gunicorn)
+            flask_thread = Thread(target=run_gunicorn, args=(port,))
             
     bot_thread = Thread(target=run_bot)
     input_thread = Thread(target=run_input, daemon=True)

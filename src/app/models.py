@@ -27,8 +27,6 @@ class User(users_database.Model, UserMixin):
 
 
 class Ficha(users_database.Model):
-    __tablename__ = 'fichas'
-
     id = users_database.Column(users_database.Integer, primary_key=True)
     uuid = users_database.Column(users_database.String(36), unique=True, default=lambda: str(uuid.uuid4()))
     visible = users_database.Column(users_database.Boolean, default=False, nullable=False)
@@ -79,4 +77,4 @@ class Ficha(users_database.Model):
     vontade = users_database.Column(users_database.SmallInteger, nullable=False)
     
     user_id = users_database.Column(users_database.Integer, users_database.ForeignKey('user.id'), nullable=False)
-    user = users_database.relationship('User', back_populates='fichas')
+    user = users_database.relationship('User', back_populates='ficha')

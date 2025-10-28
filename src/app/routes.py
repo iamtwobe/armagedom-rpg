@@ -210,7 +210,7 @@ def ficha_view(id_ficha):
 
     return render_template('ficha.html', ficha=ficha, editable=editable)
 
-@app.route('/admin/fichas/<int:id>')
+@app.route('/admin/ficha/<int:id>')
 @login_required
 def admin_ficha(id):
     if not current_user.is_admin:
