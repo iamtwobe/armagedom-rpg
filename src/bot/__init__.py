@@ -4,7 +4,6 @@ from discord.ext.commands import has_permissions, MissingPermissions
 from .bot_commands import *
 import asyncio, random, json
 import time as tm
- 
 
 
 intents = discord.Intents.default()
@@ -30,9 +29,12 @@ for command in command_list:
 # Bot start
 @bot.event
 async def on_ready():
+    from .listener import start_bot_server
+
     date_hour = tm.strftime('%d-%m-%Y %H:%M:%S', tm.localtime())
     print(f'[{date_hour}] - [{bot.user}] foi iniciado com sucesso.')
 
+    bot.loop.create_task(start_bot_server())
     _change_status.start()
 
 

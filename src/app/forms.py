@@ -36,7 +36,7 @@ class FormLogin(FlaskForm):
 
 class FormEditProfile(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired(), Length(min= 4, max= 12)])
-    password = PasswordField('Senha', validators=[DataRequired(), Length(min=8, max=48)])
+    password = PasswordField('Senha')
     profile_picture = FileField('Atualizar foto de perfil', validators=[FileAllowed(['jpg', 'png', 'webp', 'jpeg', 'gif'])])
     submit_button_edit_profile = SubmitField('Confirmar Edição')
 
@@ -50,6 +50,14 @@ class FormEditProfile(FlaskForm):
                 
     def validate_password(self, password):
         password = password.data
+        if not password:
+            return None
+        
+        if len(password) < 8:
+            raise ValidationError('Sua senha precisa ter pelo menos 8 caracteres.')
+        elif len(password) > 48:
+            raise ValidationError('Sua senha não pode ter mais de 48 caracteres.')
+        
         letters = 'abcdefghijklmnopqrstuvwxyz'
         if any(i in letters for i in password.lower()) == False:
             raise ValidationError('Sua senha precisa conter uma letra.')

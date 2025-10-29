@@ -46,6 +46,7 @@ def signup():
         users_database.session.add(user)
         users_database.session.commit()
         flash(f'Conta criada com sucesso. Bem-vindo(a) {form_signup.username.data}', 'alert-success')
+        login_user(user)
         return redirect(url_for('home'))
     return render_template('signup.html', form_signup=form_signup)
 
@@ -104,7 +105,7 @@ def edit_profile():
             current_user.profile_picture = rename_profile_image(current_user.profile_picture, form.username.data)
             current_user.username = form.username.data
         if form.password.data:
-            current_user.password = bcrypt.generate_password_hash(form.password.data)            
+            current_user.password = bcrypt.generate_password_hash(form.password.data)      
         if form.profile_picture.data:
             image_name = save_image(current_user.profile_picture, form.profile_picture.data)
             current_user.profile_picture = image_name
@@ -217,3 +218,7 @@ def admin_ficha(id):
         return redirect(url_for('home'))
     ficha = Ficha.query.get_or_404(id)
     return render_template('admin_ficha.html', ficha=ficha)
+
+@app.route('/server_status')
+def server_status():
+    return jsonify({"status": "online"}), 200

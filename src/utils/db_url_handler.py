@@ -10,8 +10,6 @@ def gen_db():
     return users_db_uri
 
 def read_db_url(env_path):
-    load_dotenv(dotenv_path=env_path)
-
     db_url = os.getenv("DATABASE_URL")
     if db_url:
         return db_url.strip('"').strip("'")

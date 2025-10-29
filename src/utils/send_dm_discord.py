@@ -1,39 +1,45 @@
-import discord
-from src.bot import bot
-import asyncio
+from src.utils.config import Config
+import requests
 import secrets
 
 
 
-async def _send_dm(user_id: int, message: str):
-    try:
-        user = await bot.fetch_user(user_id)
-        await user.send(message)
-        return 'ok'
-    except discord.Forbidden:
-        return 'forbidden'
-    except discord.NotFound:
-        return 'not found'
-    except Exception as e:
-        return e
-
-
 def send_dm_to_user(user_id: int, message: str):
     code = secrets.token_hex(12)
-    message = f"{message} {code}"
+    full_message = f"{message} {code}"
+    
+    payload = {
+        'user_id': user_id,
+        'message': full_message
+    }
+    
+    headers = {
+        'Authorization': Config.BOT_SECRET,
+        'Content-Type': 'application/json'
+    }
+
     try:
-        future = asyncio.run_coroutine_threadsafe(_send_dm(user_id, message), bot.loop)
-        result = future.result(timeout=1)  # espera a coroutine terminar e pega o retorno
+        response = requests.post(
+            Config.BOT_WEBHOOK_URL, 
+            json=payload, 
+            headers=headers, 
+            timeout=5
+        )
+        
+        if response.status_code == 200 and response.text == 'ok':
+            return code
+        elif response.status_code == 403:
+            return 'error Usuário não está no servidor'
+        elif response.status_code == 404:
+            return 'error Usuário não encontrado'
+        elif response.status_code == 401:
+            return 'error Erro de autenticação interna'
+        else:
+            return f'error Falha do Bot: {response.text}'
 
-        match result:
-            case 'ok':
-                return code
-            case 'forbidden':
-                return 'error Usuário não está no servidor'
-            case 'not found':
-                return 'error Usuário não encontrado'
-            case _:
-                return f'error {result}'
-
+    except requests.exceptions.Timeout:
+        return 'error Bot Webhook não respondeu (Timeout)'
+    except requests.exceptions.ConnectionError:
+        return 'error O Bot Webhook está offline ou não está rodando na porta correta.'
     except Exception as e:
-        return 'error offline'
+        return f'error Falha inesperada: {e}'

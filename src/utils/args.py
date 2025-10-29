@@ -1,7 +1,15 @@
 import argparse
+import os
 
 
 def get_args() -> bool:
+    if os.getenv('RUNNING_IN_GUNICORN') == 'true':
+        real_port_str = os.getenv('APP_REAL_PORT', '8000')
+        class Args:
+            port = int(real_port_str)
+            debug = False
+        return Args()
+    
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
