@@ -1,10 +1,9 @@
-from admin_cli.connectors.http_connector import AdminAPI
+from admin_cli.connectors import AdminAPI
 from admin_cli.commands import user_cmds, announce_cmds
 
-api = AdminAPI()
 
-def main():
-    print("🌐 Admin CLI conectada ao servidor Flask!")
+def main(api):
+    print("Admin CLI conectada ao servidor.")
     while True:
         cmd = input("> ").strip()
         if cmd == "exit":
@@ -17,4 +16,6 @@ def main():
             print("Comando não reconhecido")
 
 if __name__ == "__main__":
-    main()
+    api = AdminAPI()
+
+    main(api)

@@ -1,0 +1,171 @@
+body {
+    background-color: #121212;
+}
+
+.ficha-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.ficha-card {
+    background: #1e1e1e;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 700px;
+    border: 1px solid #2c2c2c;
+}
+
+.ficha-input-group button {
+    width: 40px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+
+
+.ficha-input {
+    background-color: #2a2a2a !important;
+    border: none !important;
+    color: #f5f5f5 !important;
+    box-shadow: none !important;
+    font-weight: 500;
+    font-size: 0.9rem;
+    border-radius: 6px !important;
+}
+
+.ficha-input:focus {
+    background-color: #333 !important;
+    color: #fff !important;
+    outline: none !important;
+}
+.btn-ficha {
+    background-color: #38279b;
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-ficha:hover,
+.btn-ficha:focus {
+    background-color: #291c72;
+    color: #fff !important;
+    text-decoration: none;
+}
+
+.btn-increment {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-increment:hover {
+    background-color: #157347;
+    border-color: rgba(255, 255, 255, 0.7);
+    opacity: 0.9;
+}
+
+.btn-decrement {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.btn-decrement:hover {
+    background-color: #bb2d3b;
+    border-color: rgba(255, 255, 255, 0.7);
+    opacity: 0.9;
+}
+
+.input-group .form-control {
+    max-width: 60px;
+    text-align: center;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+}
+
+.text-light {
+    color: #f8f9fa !important;
+}
+
+.text-danger {
+    color: #ff5c5c !important;
+}
+
+.ficha-card {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.row.g-3.justify-content-center {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.ficha-atributo {
+    flex: 1 1 200px;
+    max-width: 240px;
+    text-align: center;
+}
+
+.ficha-atributo label {
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.ficha-input-group {
+    justify-content: center;
+    border-radius: 0.5rem;
+}
+
+.ficha-input {
+    max-width: 60px;
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    text-align: center;
+    border-radius: 0.5rem;
+}
+
+.ficha-nome-input {
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border: 1px solid #242a30;
+}
+
+.ficha-nome-input:focus {
+    background-color: #f6f7f8;
+    border-color: #242a30;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(36, 42, 48, 0.3);
+}
+
+.pontos-alerta {
+    font-weight: bold;
+    animation: piscar 0.8s ease-in-out;
+}
+
+@keyframes piscar {
+    0%, 100% { color: #ffc107; }   /* amarelo normal */
+    50% { color: #ff4d4f; }       /* vermelho piscando */
+}
+
+form {
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+}

@@ -1,7 +1,7 @@
-from flask import render_template, request, flash, redirect, url_for, jsonify
+from flask import render_template, request, flash, redirect, url_for, jsonify, session
 from src.app import app, users_database, bcrypt
 from src.app.models import User, Ficha
-from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormCriarFicha, FormLinkDiscord
+from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormLinkDiscord, StepNomeForm, StepAtributosForm, StepPericiasForm
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
 from datetime import datetime, timedelta
@@ -171,19 +171,72 @@ def criarficha():
         flash('Por favor, verifique seu discord primeiro.', 'alert-warning')
         return redirect(url_for('verify'))
     
-    form = FormCriarFicha()
+    step = session.get('step_criar_ficha', 1)
 
-    if form.validate_on_submit():
-        ficha = Ficha(
-            nome_personagem=form.nome.data, 
-            idade_personagem=form.idade.data
-        )
-        users_database.session.add(ficha)
-        users_database.commit()
-        flash('Ficha criada com sucesso', 'alert-success')
-        return redirect(url_for('ficha/'))
-    
-    return render_template('ficha/ficha.html')
+    form1 = StepNomeForm()
+    form2 = StepAtributosForm()
+    form3 = StepPericiasForm()
+
+    if request.method == 'POST':
+        posted_step = int(request.form.get('step', step))
+
+        if posted_step != step:
+            flash('Fluxo de criação inválido.', 'alert-danger')
+            return redirect(url_for('criarficha'))
+
+        if step == 1 and form1.validate_on_submit():
+            session['ficha_nome'] = form1.nome_personagem.data
+            session['step_criar_ficha'] = 2
+            return redirect(url_for('criarficha'))
+
+        if step == 2 and form2.validate_on_submit():
+            total = (
+                form2.forca.data + form2.destreza.data +
+                form2.constituicao.data + form2.carisma.data +
+                form2.inteligencia.data
+            )
+            if total > 12:
+                flash("Você gastou mais pontos do que o permitido!", "alert-danger")
+                return redirect(url_for('criarficha'))
+
+            session['ficha_forca'] = form2.forca.data
+            session['ficha_destreza'] = form2.destreza.data
+            session['ficha_constituicao'] = form2.constituicao.data
+            session['ficha_carisma'] = form2.carisma.data
+            session['ficha_inteligencia'] = form2.inteligencia.data
+            session['step_criar_ficha'] = 3
+            return redirect(url_for('criarficha'))
+
+        if step == 3 and form3.validate_on_submit():
+            for key in list(session.keys()):
+                print(key)
+                if key.startswith('ficha_') or key == 'step_criar_ficha':
+                    session.pop(key)
+            return redirect(url_for('criarficha'))
+            ficha = Ficha(
+                nome_personagem=session.get('ficha_nome'),
+                forca=session.get('ficha_forca'),
+                destreza=session.get('ficha_destreza'),
+                constituicao=session.get('ficha_constituicao'),
+                carisma=session.get('ficha_carisma'),
+                inteligencia=session.get('ficha_inteligencia'),
+                user_id=current_user.id
+            )
+            users_database.session.add(ficha)
+            users_database.session.commit()
+
+            for key in list(session.keys()):
+                if key.startswith('ficha_') or key == 'criar_ficha_etapa':
+                    session.pop(key)
+
+            flash('Ficha criada com sucesso!', 'alert-success')
+            return redirect(url_for('ficha'))
+
+    step = session.get('step_criar_ficha', 1)
+    return render_template(
+        'ficha/criar_ficha.html', step=step,
+        form1=form1, form2=form2, form3=form3
+    )
 
 @app.route('/ficha', methods=['GET'])
 @login_required

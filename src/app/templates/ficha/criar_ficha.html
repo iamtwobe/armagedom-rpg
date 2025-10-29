@@ -1,16 +1,127 @@
-{% extends 'base.html' %}
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ficha.css') }}">
+{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-        <div class="text-center">
-            <div class="p-3 rounded-5 shadow-sm" style="background-image: url('static/img/armagedom_background.png'); background-size: 420px 135px; background-repeat: no-repeat";>
-                <h1 class="display-3 text-light font-weight-bold opacity-0" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-family: 'Poppins', sans-serif;">
-                    Armagedoma
-                </h1>
-            </div>
+<div class="ficha-container mt-5">
+  <div class="ficha-card p-4 shadow">
+    {% if step == 1 %}
+      <h3 class="mb-4 text-center text-light">Nome do personagem</h2>
+      <form method="post">
+        {{ form1.hidden_tag() }}
+        <div class="mb-3 w-50 mx-auto">
+          {{ form1.nome_personagem(class="form-control ficha-nome-input") }}
+          {% for e in form1.nome_personagem.errors %}
+            <div class="text-danger small">{{ e }}</div>
+          {% endfor %}
         </div>
-    </div>
+        <div class="text-end">
+          {{ form1.next(class="btn btn-ficha") }}
+        </div>
+      </form>
+
+    {% elif step == 2 %}
+      <h2 class="mb-4 text-center text-light">Distribuição de Atributos</h2>
+      <h6 class="text-light text-center mb-3">Pontos restantes: <span id="pontos-restantes" class="fw-bold text-warning">12</span></h6>
+
+      <form method="post">
+        {{ form2.hidden_tag() }}
+        <div class="row g-3 justify-content-center">
+            {% for field in [form2.forca, form2.destreza, form2.constituicao, form2.carisma, form2.inteligencia] %}
+                <div class="ficha-atributo">
+                {{ field.label(class="form-label text-light fw-semibold") }}
+                <div class="input-group ficha-input-group">
+                    <button type="button" class="btn btn-outline-light btn-decrement" data-target="{{ field.id }}">−</button>
+                    {{ field(class="form-control text-center ficha-input", min=0, max=4, step=1, readonly=True) }}
+                    <button type="button" class="btn btn-outline-light btn-increment" data-target="{{ field.id }}">+</button>
+                </div>
+                {% for e in field.errors %}
+                    <div class="text-danger small">{{ e }}</div>
+                {% endfor %}
+                </div>
+          {% endfor %}
+        </div>
+        <div class="text-end mt-4">
+          {{ form2.next(class="btn btn-ficha") }}
+        </div>
+      </form>
+    {% elif step == 3 %}
+    <h1 class="mb-4">Perícias</h1>
+    <form method="post">
+      {{ form3.hidden_tag() }}
+      <div class="mb-3">
+        {{ form3.atletismo.label(class="form-label") }}
+        {{ form3.atletismo(class="form-control") }}
+        {% for e in form3.atletismo.errors %}
+          <div class="text-danger small">{{ e }}</div>
+        {% endfor %}
+      </div>
+      {{ form3.finish(class="btn btn-primary") }}
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const atributos = ['forca', 'destreza', 'constituicao', 'carisma', 'inteligencia'];
+    const base = 1;
+    const pontosIniciais = 7;
+    const spanPontos = document.getElementById('pontos-restantes');
+    const pontosField = document.getElementById('pontos');
+
+    function calcularPontos() {
+        let totalGasto = 0;
+        atributos.forEach(attr => {
+        const valor = parseInt(document.getElementById(attr).value) || 0;
+        totalGasto += (valor - base);
+        });
+        const restantes = pontosIniciais - totalGasto;
+        spanPontos.textContent = restantes;
+
+        if (restantes < 0) {
+        spanPontos.classList.add('text-danger');
+        } else {
+        spanPontos.classList.remove('text-danger');
+        }
+
+        if (pontosField) pontosField.value = restantes;
+
+        return restantes;
+    }
+
+    document.querySelectorAll('.btn-increment, .btn-decrement').forEach(btn => {
+        btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const input = document.getElementById(targetId);
+        let value = parseInt(input.value, 10);
+        if (isNaN(value)) value = base;
+        const restantes = calcularPontos();
+
+        if (btn.classList.contains('btn-increment') && (value < 4) && (restantes > 0)) {
+            value++;
+        } else if (btn.classList.contains('btn-decrement') && (value > 0)) {
+            value--;
+        }
+
+        input.value = value;
+        calcularPontos();
+        });
+    });
+
+    calcularPontos();
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const pontosRestantes = parseInt(document.getElementById('pontos-restantes').textContent);
+        if (pontosRestantes > 0) {
+            e.preventDefault();
+        }
+        });
+    });
+</script>
+
+
 {% endblock %}

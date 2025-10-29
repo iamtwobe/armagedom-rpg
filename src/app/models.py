@@ -31,7 +31,7 @@ class Ficha(users_database.Model):
     uuid = users_database.Column(users_database.String(36), unique=True, default=lambda: str(uuid.uuid4()))
     visible = users_database.Column(users_database.Boolean, default=False, nullable=False)
 
-    nome = users_database.Column(users_database.String(64), nullable=False)
+    nome_personagem = users_database.Column(users_database.String(64), nullable=False)
 
     nivel = users_database.Column(users_database.SmallInteger, default=1, nullable=False)
 

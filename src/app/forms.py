@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, IntegerField
 from flask_wtf.file import FileField, FileAllowed
-from wtforms.validators import DataRequired, Length, EqualTo, ValidationError
+from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
 from src.app.models import User
 from flask_login import current_user
 
@@ -73,6 +73,22 @@ class FormLinkDiscord(FlaskForm):
         if discord_id_exists:
             raise ValidationError('Esse ID já está sendo usado.')
 
-class FormCriarFicha(FlaskForm):
-    nome = StringField('Nome', validators=[DataRequired(), Length(1, 30)])
-    submit_button_ficha = SubmitField('Criar')
+class StepNomeForm(FlaskForm):
+    step = HiddenField(default='1')
+    nome_personagem = StringField('Nome', validators=[DataRequired(), Length(1, 30)])
+    next = SubmitField('Próximo')
+
+class StepAtributosForm(FlaskForm):
+    step = HiddenField(default='2')
+    pontos_max = HiddenField(default=12)
+    forca = IntegerField('Força', validators=[NumberRange(0,4)], default=1, render_kw={"id": "forca"})
+    destreza = IntegerField('Destreza', validators=[NumberRange(0,4)], default=1, render_kw={"id": "destreza"})
+    constituicao = IntegerField('Constituição', validators=[NumberRange(0,4)], default=1, render_kw={"id": "constituicao"})
+    carisma = IntegerField('Carisma', validators=[NumberRange(0,4)], default=1, render_kw={"id": "carisma"})
+    inteligencia = IntegerField('Inteligência', validators=[NumberRange(0,4)], default=1, render_kw={"id": "inteligencia"})
+    next = SubmitField('Próximo')
+
+class StepPericiasForm(FlaskForm):
+    step = HiddenField(default='3')
+    atletismo = IntegerField('Atletismo', validators=[NumberRange(0, 4)], default=0)
+    finish = SubmitField('Finalizar')

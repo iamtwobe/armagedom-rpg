@@ -1,5 +1,8 @@
+# The configs should initialize before the app or the bot
+# if don't, both can't access the configs and keep getting None
 from src.utils.initialize import initialize_config
 initialize_config()
+
 from src.utils.config import Config
 from src.app import app
 from src.bot import bot
@@ -16,7 +19,7 @@ def run_gunicorn(port: int):
     env = os.environ.copy()
     env['RUNNING_IN_GUNICORN'] = 'true'
     env['APP_REAL_PORT'] = str(port)
-    
+
     global gunicorn_process
     gunicorn_process = subprocess.Popen([
         "gunicorn",
@@ -79,7 +82,7 @@ if __name__ == "__main__":
             flask_thread = Thread(target=app.run, kwargs={'debug': True, 'use_reloader': False, 'port': Config.APP_PORT})
         case False:
             flask_thread = Thread(target=run_gunicorn, args=(Config.APP_PORT,))
-            
+
     bot_thread = Thread(target=run_bot)
     input_thread = Thread(target=run_input, daemon=True)
 
