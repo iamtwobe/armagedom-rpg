@@ -25,6 +25,8 @@ command_list = [
 for command in command_list:
     command(bot)
 
+if not hasattr(bot, "web_runner"):
+    bot.web_runner = None
 
 # Bot start
 @bot.event
@@ -35,7 +37,14 @@ async def on_ready():
     print(f'[{date_hour}] - [{bot.user}] foi iniciado com sucesso.')
 
     bot.loop.create_task(start_bot_server())
-    _change_status.start()
+
+    try:
+        if _change_status.is_running():
+            _change_status.cancel()
+            await asyncio.sleep(0)
+        _change_status.start()
+    except RuntimeError:
+        pass
 
 
 # Status changer loop

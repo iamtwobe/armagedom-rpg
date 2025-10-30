@@ -31,11 +31,16 @@ async def handle_send_dm(request):
 
 
 async def start_bot_server():
-    app_runner = aiohttp.web.Application(loop=bot.loop)
-    app_runner.router.add_post('/send_dm', handle_send_dm)
+    if bot.web_runner is not None:
+        await bot.web_runner.cleanup()
+        bot.web_runner = None
+
+    app = aiohttp.web.Application()
+    app.router.add_post('/send_dm', handle_send_dm)
     
-    runner = aiohttp.web.AppRunner(app_runner)
+    runner = aiohttp.web.AppRunner(app)
     await runner.setup()
-    site = aiohttp.web.TCPSite(runner, '127.0.0.1', Config.BOT_WEBHOOK_PORT)
-    await site.start()
+    listener = aiohttp.web.TCPSite(runner, '127.0.0.1', Config.BOT_WEBHOOK_PORT)
+    await listener.start()
+    bot.web_runner = runner
     print(f"Bot Webhook Server started at 127.0.0.1:{Config.BOT_WEBHOOK_PORT}")
