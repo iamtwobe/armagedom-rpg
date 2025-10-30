@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ficha.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="ficha-container mt-5">
+  <div class="ficha-card p-4 shadow">
+    <h1 class="mb-4">Perícias</h1>
+    <form method="post">
+      {{ form3.hidden_tag() }}
+      <div class="mb-3">
+        {{ form3.atletismo.label(class="form-label") }}
+        {{ form3.atletismo(class="form-control") }}
+        {% for e in form3.atletismo.errors %}
+          <div class="text-danger small">{{ e }}</div>
+        {% endfor %}
+      </div>
+      {{ form3.finish(class="btn btn-primary") }}
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ficha.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="ficha-container mt-5">
+  <div class="ficha-card p-4 shadow">
+      <h3 class="mb-4 text-center text-light">Nome do personagem</h2>
+      <form method="post">
+        {{ form1.hidden_tag() }}
+        <div class="mb-3 w-50 mx-auto">
+          {{ form1.nome_personagem(class="form-control ficha-nome-input") }}
+          {% for e in form1.nome_personagem.errors %}
+            <div class="text-danger small">{{ e }}</div>
+          {% endfor %}
+        </div>
+        <div class="text-end">
+          {{ form1.next(class="btn btn-ficha") }}
+        </div>
+      </form>
+  </div>
+</div>
+
+{% endblock %}

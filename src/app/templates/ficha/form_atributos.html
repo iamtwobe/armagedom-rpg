@@ -7,25 +7,8 @@
 {% block body %}
 <div class="ficha-container mt-5">
   <div class="ficha-card p-4 shadow">
-    {% if step == 1 %}
-      <h3 class="mb-4 text-center text-light">Nome do personagem</h2>
-      <form method="post">
-        {{ form1.hidden_tag() }}
-        <div class="mb-3 w-50 mx-auto">
-          {{ form1.nome_personagem(class="form-control ficha-nome-input") }}
-          {% for e in form1.nome_personagem.errors %}
-            <div class="text-danger small">{{ e }}</div>
-          {% endfor %}
-        </div>
-        <div class="text-end">
-          {{ form1.next(class="btn btn-ficha") }}
-        </div>
-      </form>
-
-    {% elif step == 2 %}
       <h2 class="mb-4 text-center text-light">Distribuição de Atributos</h2>
       <h6 class="text-light text-center mb-3">Pontos restantes: <span id="pontos-restantes" class="fw-bold text-warning">12</span></h6>
-
       <form method="post">
         {{ form2.hidden_tag() }}
         <div class="row g-3 justify-content-center">
@@ -47,20 +30,6 @@
           {{ form2.next(class="btn btn-ficha") }}
         </div>
       </form>
-    {% elif step == 3 %}
-    <h1 class="mb-4">Perícias</h1>
-    <form method="post">
-      {{ form3.hidden_tag() }}
-      <div class="mb-3">
-        {{ form3.atletismo.label(class="form-label") }}
-        {{ form3.atletismo(class="form-control") }}
-        {% for e in form3.atletismo.errors %}
-          <div class="text-danger small">{{ e }}</div>
-        {% endfor %}
-      </div>
-      {{ form3.finish(class="btn btn-primary") }}
-    </form>
-    {% endif %}
   </div>
 </div>
 
@@ -77,7 +46,17 @@
         let totalGasto = 0;
         atributos.forEach(attr => {
         const valor = parseInt(document.getElementById(attr).value) || 0;
-        totalGasto += (valor - base);
+
+        if (valor > base) {
+            if (valor <= 2) {
+                totalGasto += (valor - base);
+            } else {
+                totalGasto += (2 - base) + (valor - 2) * 2;
+            }
+        } else if (valor < base) {
+          totalGasto -= (base - valor);
+        }
+
         });
         const restantes = pontosIniciais - totalGasto;
         spanPontos.textContent = restantes;
@@ -102,7 +81,10 @@
         const restantes = calcularPontos();
 
         if (btn.classList.contains('btn-increment') && (value < 4) && (restantes > 0)) {
-            value++;
+            if ((value >= 2) && (restantes < 2)){
+            }else{
+              value++;
+            }
         } else if (btn.classList.contains('btn-decrement') && (value > 0)) {
             value--;
         }

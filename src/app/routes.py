@@ -178,9 +178,11 @@ def criarficha():
     form3 = StepPericiasForm()
 
     if request.method == 'POST':
+        print(request.form)
         posted_step = int(request.form.get('step', step))
 
         if posted_step != step:
+            print('Step:', step, posted_step)
             flash('Fluxo de criação inválido.', 'alert-danger')
             return redirect(url_for('criarficha'))
 
@@ -220,6 +222,36 @@ def criarficha():
                 constituicao=session.get('ficha_constituicao'),
                 carisma=session.get('ficha_carisma'),
                 inteligencia=session.get('ficha_inteligencia'),
+                acrobacia=form3.acrobacia.data,
+                adestramento=form3.adestramento.data,
+                artes=form3.artes.data,
+                atletismo=form3.atletismo.data,
+                ciencias=form3.ciencias.data,
+                crime=form3.crime.data,
+                enganacao=form3.enganacao.data,
+                fortitude=form3.fortitude.data,
+                furtividade=form3.furtividade.data,
+                iniciativa=form3.iniciativa.data,
+                intimidacao=form3.intimidacao.data,
+                intuicao=form3.intuicao.data,
+                investigacao=form3.investigacao.data,
+                luta=form3.luta.data,
+                medicina=form3.medicina.data,
+                oficio=form3.oficio.data,
+                oficio_nome=form3.oficio_nome.data,
+                oficio_atributo=form3.oficio_atributo.data,
+                percepcao=form3.percepcao.data,
+                persuasao=form3.persuasao.data,
+                pilotagem=form3.pilotagem.data,
+                pontaria=form3.pontaria.data,
+                profissao=form3.profissao.data,
+                reflexos=form3.reflexos.data,
+                religiao=form3.religiao.data,
+                sobrevivencia=form3.sobrevivencia.data,
+                tatica=form3.tatica.data,
+                tecnologia=form3.tecnologia.data,
+                historia=form3.historia.data,
+                vontade=form3.vontade.data,
                 user_id=current_user.id
             )
             users_database.session.add(ficha)
@@ -233,10 +265,13 @@ def criarficha():
             return redirect(url_for('ficha'))
 
     step = session.get('step_criar_ficha', 1)
-    return render_template(
-        'ficha/criar_ficha.html', step=step,
-        form1=form1, form2=form2, form3=form3
-    )
+    match step:
+        case 1:
+            return render_template('ficha/form_nome.html', form1=form1)
+        case 2:
+            return render_template('ficha/form_atributos.html', form2=form2)
+        case 3:
+            return render_template('ficha/form_pericias.html', form3=form3)
 
 @app.route('/ficha', methods=['GET'])
 @login_required
