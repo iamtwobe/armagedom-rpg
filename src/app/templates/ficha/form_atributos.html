@@ -10,24 +10,24 @@
       <h2 class="mb-4 text-center text-light">Distribuição de Atributos</h2>
       <h6 class="text-light text-center mb-3">Pontos restantes: <span id="pontos-restantes" class="fw-bold text-warning">12</span></h6>
       <form method="post">
-        {{ form2.hidden_tag() }}
+        {{ form_atributos.hidden_tag() }}
         <div class="row g-3 justify-content-center">
-            {% for field in [form2.forca, form2.destreza, form2.constituicao, form2.carisma, form2.inteligencia] %}
+            {% for field in [form_atributos.forca, form_atributos.destreza, form_atributos.constituicao, form_atributos.carisma, form_atributos.inteligencia] %}
                 <div class="ficha-atributo">
                 {{ field.label(class="form-label text-light fw-semibold") }}
                 <div class="input-group ficha-input-group">
                     <button type="button" class="btn btn-outline-light btn-decrement" data-target="{{ field.id }}">−</button>
-                    {{ field(class="form-control text-center ficha-input", min=0, max=4, step=1, readonly=True) }}
+                    {{ field(class="form-control text-center ficha-input form-atributo-input", min=0, max=4, step=1, readonly=True) }}
                     <button type="button" class="btn btn-outline-light btn-increment" data-target="{{ field.id }}">+</button>
                 </div>
                 {% for e in field.errors %}
                     <div class="text-danger small">{{ e }}</div>
                 {% endfor %}
                 </div>
-          {% endfor %}
+            {% endfor %}
         </div>
         <div class="text-end mt-4">
-          {{ form2.next(class="btn btn-ficha") }}
+          {{ form_atributos.next(class="btn btn-ficha") }}
         </div>
       </form>
   </div>

@@ -1,8 +1,14 @@
-body{
-    background-color: #444e57;
+body {
+    background-color: #121212;
 }
 .whitetext {
     color: #fff9;
+}
+.text-light {
+    color: #f8f9fa !important;
+}
+.text-danger {
+    color: #ff5c5c !important;
 }
 .dropdown {
     color: #ffffffa6;
@@ -14,6 +20,20 @@ body{
     list-style: none;
     padding-left: 0;
     margin: 0;
+}
+.form-control{
+    background-color: #5e5e5ee5 !important;
+    border-color: #c7c7c7e5;
+    color: #fff !important;
+}
+.form-control:focus {
+    background-color: #f6f7f8;
+    border-color: rgb(156, 156, 156);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(36, 42, 48, 0.3);
+}
+.input-group-text{
+    background-color: rgb(156, 156, 156);
 }
 .nav-link.dropdown-toggle::after {
     display: none;

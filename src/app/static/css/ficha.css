@@ -1,7 +1,3 @@
-body {
-    background-color: #121212;
-}
-
 .ficha-container {
     display: flex;
     justify-content: center;
@@ -22,8 +18,6 @@ body {
     transition: 0.2s;
 }
 
-
-
 .ficha-input {
     background-color: #2a2a2a !important;
     border: none !important;
@@ -39,6 +33,20 @@ body {
     color: #fff !important;
     outline: none !important;
 }
+
+.form-control{
+    background-color: #5e5e5ee5 !important;
+    border-color: #c7c7c7e5;
+    color: #fff !important;
+}
+
+.form-control:focus {
+    background-color: #f6f7f8;
+    border-color: rgb(156, 156, 156);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(36, 42, 48, 0.3);
+}
+
 .btn-ficha {
     background-color: #38279b;
     color: #fff;
@@ -83,14 +91,6 @@ body {
     text-align: center;
     background-color: #f8f9fa;
     border: 1px solid #ced4da;
-}
-
-.text-light {
-    color: #f8f9fa !important;
-}
-
-.text-danger {
-    color: #ff5c5c !important;
 }
 
 .ficha-card {
@@ -145,24 +145,22 @@ body {
     border-radius: 0.5rem;
     padding: 0.5rem;
     background-color: #f8f9fa;
-    border: 1px solid #242a30;
+    border: 2px solid #242a30;
 }
 
 .ficha-nome-input:focus {
     background-color: #f6f7f8;
-    border-color: #242a30;
+    border-color: #464e55;
     outline: none;
     box-shadow: 0 0 0 2px rgba(36, 42, 48, 0.3);
 }
 
-.pontos-alerta {
-    font-weight: bold;
-    animation: piscar 0.8s ease-in-out;
+.form-atributo-input{
+    background-color: #212427 !important;
 }
 
-@keyframes piscar {
-    0%, 100% { color: #ffc107; }   /* amarelo normal */
-    50% { color: #ff4d4f; }       /* vermelho piscando */
+.form-atributo-input:focus {
+    background-color: #21242700 !important;
 }
 
 form {

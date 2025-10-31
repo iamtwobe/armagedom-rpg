@@ -9,15 +9,15 @@
   <div class="ficha-card p-4 shadow">
     <h1 class="mb-4">Perícias</h1>
     <form method="post">
-      {{ form3.hidden_tag() }}
+      {{ form_pericias.hidden_tag() }}
       <div class="mb-3">
-        {{ form3.atletismo.label(class="form-label") }}
-        {{ form3.atletismo(class="form-control") }}
-        {% for e in form3.atletismo.errors %}
+        {{ form_pericias.atletismo.label(class="form-label") }}
+        {{ form_pericias.atletismo(class="form-control") }}
+        {% for e in form_pericias.atletismo.errors %}
           <div class="text-danger small">{{ e }}</div>
         {% endfor %}
       </div>
-      {{ form3.finish(class="btn btn-primary") }}
+      {{ form_pericias.finish(class="btn btn-primary") }}
     </form>
   </div>
 </div>

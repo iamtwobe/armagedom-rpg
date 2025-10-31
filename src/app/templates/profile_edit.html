@@ -3,12 +3,12 @@
 {% block form_edit_profile %}
 
     <div class="container col-6 mb-5">
-        <hr style="background: #444e57; color: #444e57;">
+        <hr style="background: #86939e; color: #444e57;">
         <div class="row">
-            <div class="letrabranca">
+            <div class="text-light">
                 <form method="POST" action="" class="p-3 border-3 border border-light border-opacity-50 mt-5 rounded bg-secondary bg-opacity-10" enctype="multipart/form-data">
                     {{ form.csrf_token }}
-                    <legend class="m-3">Editar Perfil</legend>
+                    <legend class="m-3 text-light">Editar Perfil</legend>
                     <fieldset class="mt-5">
                         <div class="form-group mb-2 m-2">
                             {{ form.username.label(class="form-label") }}
@@ -45,7 +45,7 @@
                             {% endif %}
                         </div>
                         <div class="form-group mb-2 m-2">
-                            {{ form.profile_picture.label }}
+                            {{ form.profile_picture.label(class="custom-file-input-label") }}
                             {{ form.profile_picture(class="form-control") }}
                             {% if form.profile_picture.errors %}
                                 {% for erro in form.profile_picture.errors %}
