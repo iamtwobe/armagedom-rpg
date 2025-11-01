@@ -25,7 +25,6 @@ class User(users_database.Model, UserMixin):
     ficha = users_database.relationship('Ficha', back_populates='user', cascade='all, delete-orphan', uselist=False)
 
 
-
 class Ficha(users_database.Model):
     id = users_database.Column(users_database.Integer, primary_key=True)
     uuid = users_database.Column(users_database.String(36), unique=True, default=lambda: str(uuid.uuid4()))
@@ -61,7 +60,7 @@ class Ficha(users_database.Model):
     luta = users_database.Column(users_database.SmallInteger, nullable=False)
     medicina = users_database.Column(users_database.SmallInteger, nullable=False)
     oficio = users_database.Column(users_database.SmallInteger, nullable=False)
-    oficio_nome = users_database.Column(users_database.String(64), nullable=True)
+    oficio_nome = users_database.Column(users_database.String(16), nullable=True)
     oficio_atributo = users_database.Column(users_database.String(16), nullable=False, default="inteligencia")
     percepcao = users_database.Column(users_database.SmallInteger, nullable=False)
     persuasao = users_database.Column(users_database.SmallInteger, nullable=False)
@@ -78,3 +77,20 @@ class Ficha(users_database.Model):
     
     user_id = users_database.Column(users_database.Integer, users_database.ForeignKey('user.id'), nullable=False)
     user = users_database.relationship('User', back_populates='ficha')
+
+    inventory = users_database.relationship('Inventory', back_populates='ficha', cascade='all, delete-orphan')
+
+
+class Inventory(users_database.Model):
+    item_id = users_database.Column(users_database.Integer, primary_key=True)
+
+    item_name = users_database.Column(users_database.String(64), nullable=False)
+    is_weapon = users_database.Column(users_database.Boolean, nullable=False, default=False)
+    item_damage = users_database.Column(users_database.String(16), nullable=False)
+    is_equipped = users_database.Column(users_database.Boolean, nullable=False, default=False) # maybe if weapon gives bonus
+    item_description = users_database.Column(users_database.String(256), nullable=False)
+
+
+
+    ficha_id = users_database.Column(users_database.Integer, users_database.ForeignKey('ficha.id'), nullable=False)
+    ficha = users_database.relationship('Ficha', back_populates='inventory')

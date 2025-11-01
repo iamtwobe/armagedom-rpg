@@ -195,7 +195,7 @@ def criarficha():
                 form_atributos.constituicao.data + form_atributos.carisma.data +
                 form_atributos.inteligencia.data
             )
-            if total > 12:
+            if total > form_atributos.pontos_max:
                 flash("Você gastou mais pontos do que o permitido!", "alert-danger")
                 return redirect(url_for('criarficha'))
 

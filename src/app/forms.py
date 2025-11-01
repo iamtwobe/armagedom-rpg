@@ -80,7 +80,7 @@ class StepNomeForm(FlaskForm):
 
 class StepAtributosForm(FlaskForm):
     step = HiddenField(default='2')
-    pontos_max = HiddenField(default=12)
+    pontos_max = HiddenField(default=10)
     forca = IntegerField('Força', validators=[NumberRange(0,4)], default=1, render_kw={"id": "forca"})
     destreza = IntegerField('Destreza', validators=[NumberRange(0,4)], default=1, render_kw={"id": "destreza"})
     constituicao = IntegerField('Constituição', validators=[NumberRange(0,4)], default=1, render_kw={"id": "constituicao"})
