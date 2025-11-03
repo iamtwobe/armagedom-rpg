@@ -7,19 +7,212 @@
 {% block body %}
 <div class="ficha-container mt-5">
   <div class="ficha-card p-4 shadow">
-    <h1 class="mb-4">Perícias</h1>
+    <h2 class="mb-4 text-center text-light">Distribuição de Perícias</h2>
+    <p class="text-light text-center mb-4 small">
+      Selecione até 12 pontos de perícia. Cada perícia pode receber <strong>+1</strong> (custa 1 ponto)
+      ou <strong>+2</strong> (custa 3 pontos). O valor final é somado ao atributo base.
+    </p>
+    
+    <div id="contador-pontos" class="text-center mb-3">
+      <span class="badge pontos-badge fs-6">
+        Pontos restantes: <span id="pontos-restantes">12</span>
+      </span>
+    </div>
+
     <form method="post">
       {{ form_pericias.hidden_tag() }}
-      <div class="mb-3">
-        {{ form_pericias.atletismo.label(class="form-label") }}
-        {{ form_pericias.atletismo(class="form-control") }}
-        {% for e in form_pericias.atletismo.errors %}
-          <div class="text-danger small">{{ e }}</div>
-        {% endfor %}
+      
+      <div class="table-responsive">
+        <table class="table table-dark table-striped align-middle text-center ficha-table">
+          <thead>
+            <tr class="text-warning">
+              <th style="width: 10%;">+2</th>
+              <th style="width: 10%;">+1</th>
+              <th>Perícia</th>
+              <th style="width: 25%;">Atributo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for nome, campo, atributo in pericias %}
+              {% set attr_map = {
+                'For': 'ficha_forca',
+                'Des': 'ficha_destreza',
+                'Con': 'ficha_constituicao',
+                'Car': 'ficha_carisma',
+                'Int': 'ficha_inteligencia',
+              } %}
+              {% set attr_key = attr_map.get(atributo, '') %}
+              {% set attr_value = session.get(attr_key, 0) %}
+              {{ campo(type="hidden", id=campo.id) }}
+
+              <tr class="pericia-row">
+                <td>
+                  <input type="radio" name="{{ campo.id }}" value="2"
+                        id="{{ nome }}_2"
+                        class="form-check-input radio-2">
+                </td>
+                <td>
+                  <input type="radio" name="{{ campo.id }}" value="1"
+                        id="{{ nome }}_1"
+                        class="form-check-input radio-1">
+                </td>
+                <td>
+                  {% if nome == 'Ofício' %}
+                    {{ form_pericias.oficio_nome(class="form-control form-control-sm mb-0 text-center oficio-input") }}
+                  {% else %}
+                    <label for="{{ nome }}_1" class="form-label text-light mb-0">{{ nome }}</label>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if nome == 'Ofício' %}
+                  {{ form_pericias.oficio_atributo(type="hidden", id="oficio_atributo_hidden") }}
+                    <div class="d-flex justify-content-center align-items-center gap-2">
+                      <div class="dropdown">
+                        <button class="oficio-btn dropdown-toggle" type="button" id="oficioAttrBtn" data-bs-toggle="dropdown" aria-expanded="false">
+                          Int
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="oficioAttrBtn">
+                          <li><a class="dropdown-item oficio-attr-option" href="#" data-attr="For">For</a></li>
+                          <li><a class="dropdown-item oficio-attr-option" href="#" data-attr="Des">Des</a></li>
+                          <li><a class="dropdown-item oficio-attr-option" href="#" data-attr="Con">Con</a></li>
+                          <li><a class="dropdown-item oficio-attr-option" href="#" data-attr="Car">Car</a></li>
+                          <li><a class="dropdown-item oficio-attr-option" href="#" data-attr="Int">Int</a></li>
+                        </ul>
+                      </div>
+                      <span class="badge bg-secondary attr-value" data-base="{{ session['ficha_inteligencia'] }}" id="oficio-attr-value">
+                        +{{ session['ficha_inteligencia'] }}
+                      </span>
+                    </div>
+                  {% else %}
+                    <span class="badge bg-secondary">{{ atributo }}</span>
+                    <span class="badge bg-secondary attr-value" data-base="{{ attr_value }}">+{{ attr_value }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      {{ form_pericias.finish(class="btn btn-primary") }}
+
+      <div class="text-end mt-4">
+        {{ form_pericias.finish(class="btn btn-ficha") }}
+      </div>
     </form>
   </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const pontosRestantesSpan = document.getElementById('pontos-restantes');
+    let pontosRestantes = 12;
+    pontosRestantesSpan.textContent = pontosRestantes;
+
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', e => {
+      if (pontosRestantes > 0) {
+        e.preventDefault();
+        pontosRestantesSpan.classList.add('text-danger');
+        setTimeout(() => pontosRestantesSpan.classList.remove('text-danger'), 500);
+      }
+    });
+
+    document.querySelectorAll('.radio-1, .radio-2').forEach(r => {
+      if (r.checked) r.dataset.selected = 'true';
+    });
+
+    const baseAttrs = {
+      'For': parseInt("{{ session['ficha_forca'] }}"),
+      'Des': parseInt("{{ session['ficha_destreza'] }}"),
+      'Con': parseInt("{{ session['ficha_constituicao'] }}"),
+      'Car': parseInt("{{ session['ficha_carisma'] }}"),
+      'Int': parseInt("{{ session['ficha_inteligencia'] }}"),
+    };
+
+    document.querySelectorAll('.radio-1, .radio-2').forEach(radio => {
+      radio.addEventListener('click', function () {
+        const linha = this.closest('tr');
+        const attrValueSpan = linha.querySelector('.attr-value');
+        const baseValue = parseInt(attrValueSpan.dataset.base, 10) || 0;
+
+        const prev = Array.from(linha.querySelectorAll('input[type="radio"]'))
+                          .find(r => r.dataset.selected === 'true');
+
+        if (this.dataset.selected === 'true') {
+          this.checked = false;
+          this.dataset.selected = 'false';
+          const refund = this.classList.contains('radio-2') ? 3 : 1;
+
+          const hiddenInput = document.getElementById(`${this.name.toLowerCase()}`);
+          hiddenInput.value = 0;
+
+          pontosRestantes += refund;
+          attrValueSpan.textContent = `+${baseValue}`;
+          pontosRestantesSpan.textContent = pontosRestantes;
+          return;
+        }
+
+        if (prev && prev !== this) {
+          const prevCost = prev.classList.contains('radio-2') ? 3 : 1;
+          pontosRestantes += prevCost;
+          
+          const hiddenInput = document.getElementById(`${this.name.toLowerCase()}`);
+          hiddenInput.value = 0;
+
+          prev.dataset.selected = 'false';
+          prev.checked = false;
+        }
+
+        const custo = this.classList.contains('radio-2') ? 3 : 1;
+        if (pontosRestantes - custo < 0) {
+          this.checked = false;
+          this.dataset.selected = 'false';
+          pontosRestantesSpan.classList.add('text-danger');
+          setTimeout(() => pontosRestantesSpan.classList.remove('text-danger'), 500);
+          return;
+        }
+
+        this.dataset.selected = 'true';
+        this.checked = true;
+        pontosRestantes -= custo;
+
+        const bonus = this.classList.contains('radio-2') ? 2 : 1;
+
+        const hiddenInput = document.getElementById(`${this.name.toLowerCase()}`);
+        hiddenInput.value = bonus;
+
+        attrValueSpan.textContent = `+${baseValue + bonus}`;
+        pontosRestantesSpan.textContent = pontosRestantes;
+      });
+    });
+
+    const attrBtn = document.getElementById('oficioAttrBtn');
+    const attrValueSpan = document.getElementById('oficio-attr-value');
+    document.querySelectorAll('.oficio-attr-option').forEach(option => {
+      option.addEventListener('click', e => {
+        e.preventDefault();
+        const selectedAttr = option.dataset.attr;
+        attrBtn.textContent = selectedAttr;
+
+        const oficioAttrHidden = document.getElementById('oficio_atributo_hidden');
+        if (oficioAttrHidden) {
+          oficioAttrHidden.value = option.dataset.attr; 
+        }
+
+        const baseValue = baseAttrs[selectedAttr] || 0;
+        attrValueSpan.dataset.base = baseValue;
+        attrValueSpan.textContent = `+${baseValue}`;
+
+        const linha = attrValueSpan.closest('tr');
+        const radioSelecionado = linha.querySelector('input[type="radio"][data-selected="true"]');
+        if (radioSelecionado) {
+          const bonus = radioSelecionado.classList.contains('radio-2') ? 2 : 1;
+          attrValueSpan.textContent = `+${baseValue + bonus}`;
+        }
+      });
+    });
+  });
+</script>
 
 {% endblock %}

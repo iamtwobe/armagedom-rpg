@@ -195,7 +195,7 @@ def criarficha():
                 form_atributos.constituicao.data + form_atributos.carisma.data +
                 form_atributos.inteligencia.data
             )
-            if total > form_atributos.pontos_max:
+            if total > int(form_atributos.pontos_max.data):
                 flash("Você gastou mais pontos do que o permitido!", "alert-danger")
                 return redirect(url_for('criarficha'))
 
@@ -208,6 +208,15 @@ def criarficha():
             return redirect(url_for('criarficha'))
 
         if step == 3 and form_pericias.validate_on_submit():
+            atributos_map = {
+                "For": "forca",
+                "Des": "destreza",
+                "Con": "constituicao",
+                "Car": "carisma",
+                "Int": "inteligencia",
+            }
+            form_pericias.oficio_atributo.data = atributos_map.get(form_pericias.oficio_atributo.data)
+
             for key in list(session.keys()):
                 print(key)
                 if key.startswith('ficha_') or key == 'step_criar_ficha':
@@ -242,7 +251,6 @@ def criarficha():
                 persuasao=form_pericias.persuasao.data,
                 pilotagem=form_pericias.pilotagem.data,
                 pontaria=form_pericias.pontaria.data,
-                profissao=form_pericias.profissao.data,
                 reflexos=form_pericias.reflexos.data,
                 religiao=form_pericias.religiao.data,
                 sobrevivencia=form_pericias.sobrevivencia.data,
@@ -269,7 +277,36 @@ def criarficha():
         case 2:
             return render_template('ficha/form_atributos.html', form_atributos=form_atributos)
         case 3:
-            return render_template('ficha/form_pericias.html', form_pericias=form_pericias)
+            pericias = [
+                ("Acrobacia", form_pericias.acrobacia, "Des"),
+                ("Adestramento", form_pericias.adestramento, "Int"),
+                ("Artes", form_pericias.artes, "Car"),
+                ("Atletismo", form_pericias.atletismo, "For"),
+                ("Ciências", form_pericias.ciencias, "Int"),
+                ("Crime", form_pericias.crime, "Des"),
+                ("Enganação", form_pericias.enganacao, "Car"),
+                ("Fortitude", form_pericias.fortitude, "Con"),
+                ("Furtividade", form_pericias.furtividade, "Des"),
+                ("Iniciativa", form_pericias.iniciativa, "Des"),
+                ("Intimidação", form_pericias.intimidacao, "Car"),
+                ("Intuição", form_pericias.intuicao, "Int"),
+                ("Investigação", form_pericias.investigacao, "Int"),
+                ("Luta", form_pericias.luta, "For"),
+                ("Medicina", form_pericias.medicina, "Int"),
+                ("Ofício", form_pericias.oficio, "Int"),
+                ("Percepcao", form_pericias.percepcao, "Des"),
+                ("Persuasao", form_pericias.persuasao, "Car"),
+                ("Pilotagem", form_pericias.pilotagem, "Des"),
+                ("Pontaria", form_pericias.pontaria, "Des"),
+                ("Reflexos", form_pericias.reflexos, "Des"),
+                ("Religião", form_pericias.religiao, "Int"),
+                ("Sobrevivência", form_pericias.sobrevivencia, "Int"),
+                ("Tática", form_pericias.tatica, "Des"),
+                ("Tecnologia", form_pericias.tecnologia, "Int"),
+                ("História", form_pericias.historia, "Int"),
+                ("Vontade", form_pericias.vontade, "Car")
+            ]
+            return render_template('ficha/form_pericias.html', form_pericias=form_pericias, pericias=pericias)
 
 @app.route('/ficha', methods=['GET'])
 @login_required
