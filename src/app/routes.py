@@ -166,7 +166,7 @@ def verify():
 @login_required
 def criarficha():
     if current_user.id in Ficha.query.all():
-        return redirect(url_for('ficha'))
+        return redirect(url_for('ficha_load'))
     if not current_user.discord_id:
         flash('Por favor, verifique seu discord primeiro.', 'alert-warning')
         return redirect(url_for('verify'))
@@ -217,58 +217,58 @@ def criarficha():
             }
             form_pericias.oficio_atributo.data = atributos_map.get(form_pericias.oficio_atributo.data)
 
-            for key in list(session.keys()):
-                print(key)
-                if key.startswith('ficha_') or key == 'step_criar_ficha':
-                    session.pop(key)
-            return redirect(url_for('criarficha'))
+            __hp = (6 + (session.get('ficha_constituicao') * 2))
+
             ficha = Ficha(
+                user_id=current_user.id,
                 nome_personagem=session.get('ficha_nome'),
+                nivel=1,
+                vida_maxima=__hp,
+                vida_atual=__hp,
                 forca=session.get('ficha_forca'),
                 destreza=session.get('ficha_destreza'),
                 constituicao=session.get('ficha_constituicao'),
                 carisma=session.get('ficha_carisma'),
                 inteligencia=session.get('ficha_inteligencia'),
-                acrobacia=form_pericias.acrobacia.data,
-                adestramento=form_pericias.adestramento.data,
-                artes=form_pericias.artes.data,
-                atletismo=form_pericias.atletismo.data,
-                ciencias=form_pericias.ciencias.data,
-                crime=form_pericias.crime.data,
-                enganacao=form_pericias.enganacao.data,
-                fortitude=form_pericias.fortitude.data,
-                furtividade=form_pericias.furtividade.data,
-                iniciativa=form_pericias.iniciativa.data,
-                intimidacao=form_pericias.intimidacao.data,
-                intuicao=form_pericias.intuicao.data,
-                investigacao=form_pericias.investigacao.data,
-                luta=form_pericias.luta.data,
-                medicina=form_pericias.medicina.data,
-                oficio=form_pericias.oficio.data,
+                p_acrobacia=form_pericias.acrobacia.data,
+                p_adestramento=form_pericias.adestramento.data,
+                p_artes=form_pericias.artes.data,
+                p_atletismo=form_pericias.atletismo.data,
+                p_ciencias=form_pericias.ciencias.data,
+                p_crime=form_pericias.crime.data,
+                p_enganacao=form_pericias.enganacao.data,
+                p_fortitude=form_pericias.fortitude.data,
+                p_furtividade=form_pericias.furtividade.data,
+                p_iniciativa=form_pericias.iniciativa.data,
+                p_intimidacao=form_pericias.intimidacao.data,
+                p_intuicao=form_pericias.intuicao.data,
+                p_investigacao=form_pericias.investigacao.data,
+                p_luta=form_pericias.luta.data,
+                p_medicina=form_pericias.medicina.data,
+                p_oficio=form_pericias.oficio.data,
                 oficio_nome=form_pericias.oficio_nome.data,
                 oficio_atributo=form_pericias.oficio_atributo.data,
-                percepcao=form_pericias.percepcao.data,
-                persuasao=form_pericias.persuasao.data,
-                pilotagem=form_pericias.pilotagem.data,
-                pontaria=form_pericias.pontaria.data,
-                reflexos=form_pericias.reflexos.data,
-                religiao=form_pericias.religiao.data,
-                sobrevivencia=form_pericias.sobrevivencia.data,
-                tatica=form_pericias.tatica.data,
-                tecnologia=form_pericias.tecnologia.data,
-                historia=form_pericias.historia.data,
-                vontade=form_pericias.vontade.data,
-                user_id=current_user.id
+                p_percepcao=form_pericias.percepcao.data,
+                p_persuasao=form_pericias.persuasao.data,
+                p_pilotagem=form_pericias.pilotagem.data,
+                p_pontaria=form_pericias.pontaria.data,
+                p_reflexos=form_pericias.reflexos.data,
+                p_religiao=form_pericias.religiao.data,
+                p_sobrevivencia=form_pericias.sobrevivencia.data,
+                p_tatica=form_pericias.tatica.data,
+                p_tecnologia=form_pericias.tecnologia.data,
+                p_historia=form_pericias.historia.data,
+                p_vontade=form_pericias.vontade.data
             )
             users_database.session.add(ficha)
             users_database.session.commit()
 
             for key in list(session.keys()):
-                if key.startswith('ficha_') or key == 'criar_ficha_etapa':
+                if key.startswith('ficha_') or key == 'criar_ficha_etapa' or key == 'step_criar_ficha':
                     session.pop(key)
 
             flash('Ficha criada com sucesso!', 'alert-success')
-            return redirect(url_for('ficha'))
+            return redirect(url_for('ficha_load'))
 
     step = session.get('step_criar_ficha', 1)
     match step:
@@ -294,8 +294,8 @@ def criarficha():
                 ("Luta", form_pericias.luta, "For"),
                 ("Medicina", form_pericias.medicina, "Int"),
                 ("Ofício", form_pericias.oficio, "Int"),
-                ("Percepcao", form_pericias.percepcao, "Des"),
-                ("Persuasao", form_pericias.persuasao, "Car"),
+                ("Percepção", form_pericias.percepcao, "Des"),
+                ("Persuasão", form_pericias.persuasao, "Car"),
                 ("Pilotagem", form_pericias.pilotagem, "Des"),
                 ("Pontaria", form_pericias.pontaria, "Des"),
                 ("Reflexos", form_pericias.reflexos, "Des"),
@@ -314,25 +314,81 @@ def ficha_load():
     if current_user.ficha is None:
         return redirect(url_for('criarficha'))
     
-    return redirect(url_for('ficha', id_ficha=current_user.ficha.uuid))
+    return redirect(url_for('ficha_view', id_ficha=current_user.ficha.uuid))
 
 @app.route('/ficha/<string:id_ficha>', methods=['GET', 'POST'])
 @login_required
 def ficha_view(id_ficha):
-    ficha = Ficha.query.filter_by(id_ficha=id_ficha).first_or_404()
+    ficha = Ficha.query.filter_by(uuid=id_ficha).first_or_404()
     if not ficha.visible and ficha.user_id != current_user.id and not current_user.is_admin:
         flash('Você não tem permissão para acessar essa ficha.', 'alert-danger')
         return redirect(url_for('home'))
     
     editable = ficha.user_id == current_user.id or current_user.is_admin
 
+    _pericias = [
+        ("Acrobacia", ficha.p_acrobacia, "Des"),
+        ("Adestramento", ficha.p_adestramento, "Int"),
+        ("Artes", ficha.p_artes, "Car"),
+        ("Atletismo", ficha.p_atletismo, "For"),
+        ("Ciências", ficha.p_ciencias, "Int"),
+        ("Crime", ficha.p_crime, "Des"),
+        ("Enganação", ficha.p_enganacao, "Car"),
+        ("Fortitude", ficha.p_fortitude, "Con"),
+        ("Furtividade", ficha.p_furtividade, "Des"),
+        ("Iniciativa", ficha.p_iniciativa, "Des"),
+        ("Intimidação", ficha.p_intimidacao, "Car"),
+        ("Intuição", ficha.p_intuicao, "Int"),
+        ("Investigação", ficha.p_investigacao, "Int"),
+        ("Luta", ficha.p_luta, "For"),
+        ("Medicina", ficha.p_medicina, "Int"),
+        (ficha.oficio_nome, ficha.p_oficio, ficha.oficio_atributo[:3].capitalize()),
+        ("Percepção", ficha.p_percepcao, "Des"),
+        ("Persuasão", ficha.p_persuasao, "Car"),
+        ("Pilotagem", ficha.p_pilotagem, "Des"),
+        ("Pontaria", ficha.p_pontaria, "Des"),
+        ("Reflexos", ficha.p_reflexos, "Des"),
+        ("Religião", ficha.p_religiao, "Int"),
+        ("Sobrevivência", ficha.p_sobrevivencia, "Int"),
+        ("Tática", ficha.p_tatica, "Des"),
+        ("Tecnologia", ficha.p_tecnologia, "Int"),
+        ("História", ficha.p_historia, "Int"),
+        ("Vontade", ficha.p_vontade, "Car")
+    ]
+
     if request.method == 'POST' and editable:
-        ficha.nome_personagem = request.form.get('nome_personagem')
-        users_database.session.commit()
+        if "historia_personagem" in request.form:
+            ficha.historia_personagem = request.form.get('historia_personagem')
+            ficha.aparencia_personagem = request.form.get('aparencia_personagem')
+            ficha.bio_personagem = request.form.get('bio_personagem')
+            ficha.favoritos_personagem = request.form.get('favoritos_personagem')
+            ficha.defeitos_personagem = request.form.get('defeitos_personagem')
+            users_database.session.commit()
+
         flash('Ficha atualizada com sucesso.', 'alert-success')
         return redirect(url_for('ficha_view', id_ficha=id_ficha))
 
-    return render_template('ficha.html', ficha=ficha, editable=editable)
+    return render_template('ficha/ficha.html', ficha=ficha, pericias=_pericias, editable=editable)
+
+@app.route('/api/update_hp/<id_ficha>', methods=["POST"])
+def update_hp(id_ficha):
+    ficha = Ficha.query.filter_by(id=id_ficha).first()
+    if not ficha:
+        return jsonify({"error": "Ficha não encontrada"}), 404
+
+    data = request.get_json()
+    if not data or "vida_atual" not in data:
+        return jsonify({"error": "Dados inválidos"}), 400
+
+    try:
+        nova_vida = int(data["vida_atual"])
+    except ValueError:
+        return jsonify({"error": "Valor inválido"}), 400
+
+    ficha.vida_atual = nova_vida
+    users_database.session.commit()
+
+    return jsonify({"success": True, "vida_atual": ficha.vida_atual})
 
 @app.route('/admin/ficha/<int:id>')
 @login_required
@@ -340,7 +396,7 @@ def admin_ficha(id):
     if not current_user.is_admin:
         return redirect(url_for('home'))
     ficha = Ficha.query.get_or_404(id)
-    return render_template('admin_ficha.html', ficha=ficha)
+    return render_template('admin/admin_ficha.html', ficha=ficha)
 
 @app.route('/server_status')
 def server_status():

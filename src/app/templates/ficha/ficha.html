@@ -1,16 +1,273 @@
-{% extends 'base.html' %}
-<head>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-</head>
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ficha.css') }}">
+{% endblock %}
 
 {% block body %}
-    <div class="d-flex justify-content-center align-items-center" style="height: 80vh;">
-        <div class="text-center">
-            <div class="p-3 rounded-5 shadow-sm" style="background-image: url('static/img/armagedom_background.png'); background-size: 420px 135px; background-repeat: no-repeat";>
-                <h1 class="display-3 text-light font-weight-bold opacity-0" style="text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); font-family: 'Poppins', sans-serif;">
-                    Armagedoma
-                </h1>
+<div class="container ficha-container mt-4 mb-5" data-ficha-id="{{ ficha.id }}">
+  <div class="card ficha-card p-4 shadow-sm">
+
+    <ul class="nav nav-tabs mb-4" id="fichaTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="tab-main" data-bs-toggle="tab" data-bs-target="#tabFicha" type="button" role="tab">Ficha</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-bio" data-bs-toggle="tab" data-bs-target="#tabBio" type="button" role="tab">Info</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="tab-inv" data-bs-toggle="tab" data-bs-target="#tabInv" type="button" role="tab">Inventário</button>
+      </li>
+    </ul>
+
+    <div class="tab-content">
+      
+      <div class="tab-pane fade show active" id="tabFicha" role="tabpanel">
+
+        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
+          <div>
+            <h3 class="text-light m-0">{{ ficha.nome_personagem or '— Sem Nome —' }}</h3>
+
+            <p class="text-level mb-1">Nível {{ nivel or 1 }}
+            {% if ficha.level_up %}
+                <a href="{{ url_for('home') }}" class="btn btn-level-up-mini mt-2 mb-2">Subir de nível</a>
+            {% endif %}
+            </p>
+
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-minus-5">−5</button>
+              <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-minus">−</button>
+              <div class="hp-box">
+                <div class="hp-bar" id="hp-bar"></div>
+                <div class="hp-display">
+                  <span id="hp-atual">{{ ficha.vida_atual or 0 }}</span> /
+                  <span id="hp-max">{{ ficha.vida_maxima or 0 }}</span>
+                </div>
+              </div>
+              <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-plus">+</button>
+              <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-plus-5">+5</button>
             </div>
+          </div>
+
+          <div class="atributos d-flex flex-wrap gap-2 mt-3 mt-md-0">
+            {% for nome, valor in {
+              'FOR': ficha.forca,
+              'DES': ficha.destreza,
+              'CON': ficha.constituicao,
+              'INT': ficha.inteligencia,
+              'CAR': ficha.carisma
+            }.items() %}
+              <div class="atributo-box text-center">
+                <div class="atributo-label">{{ nome }}</div>
+                <div class="atributo-val">{{ valor }}</div>
+                
+                <button type="button" class="pericia-overlay-btn" aria-label="Usar {{ nome }}" 
+                data-pericia="{{ nome }}" data-valor="{{ valor }}"></button>
+              </div>
+            {% endfor %}
+          </div>
         </div>
+
+        <div class="pericias-section">
+          <h5 class="text-light mb-3">Perícias</h5>
+          <div class="pericias-grid">
+            {% set attr_map = {
+              'For': ficha.forca,
+              'Des': ficha.destreza,
+              'Con': ficha.constituicao,
+              'Int': ficha.inteligencia,
+              'Car': ficha.carisma
+            } %}
+            
+            {% for nome, valor, atributo in pericias %}
+              {% set base_attr = attr_map.get(atributo, 0) %}
+              {% set total = base_attr + (valor or 0) %}
+              <div class="pericia-item d-flex justify-content-between align-items-center rounded-2">
+                <span class="text-light">{{ nome }}</span>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-secondary">{{ atributo }}</span>
+                  <span class="badge bg-primary">+{{ total }}</span>
+                </div>
+                <button type="button" class="pericia-overlay-btn" aria-label="Usar {{ nome }}" 
+                        data-pericia="{{ nome }}" data-valor="{{ total }}"></button>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="tabBio" role="tabpanel">
+        <form method="post" id="form-bio">
+          {{ csrf_token() if csrf_token is defined else '' }}
+          <div class="mb-3">
+            <label class="form-label text-light">História</label>
+            <textarea name="historia_personagem" class="form-control" rows="6">{{ ficha.historia_personagem or '' }}</textarea>
+          </div>
+          <div class="mb-3 row">
+            <div class="col-md-6">
+              <label class="form-label text-light">Aparência</label>
+              <textarea name="aparencia_personagem" class="form-control" rows="4">{{ ficha.aparencia_personagem or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-light">Bio</label>
+              <textarea name="bio_personagem" class="form-control" rows="4">{{ ficha.bio_personagem or '' }}</textarea>
+            </div>
+          </div>
+          <div class="mb-3 row">
+            <div class="col-md-6">
+              <label class="form-label text-light">Defeitos</label>
+              <textarea name="defeitos_personagem" class="form-control" rows="3">{{ ficha.defeitos_personagem or '' }}</textarea>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label text-light">Favoritos</label>
+              <textarea name="notas_personagem" class="form-control" rows="3">{{ ficha.favoritos_personagem or '' }}</textarea>
+            </div>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-ficha">Salvar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="tab-pane fade" id="tabInv" role="tabpanel">
+        <div class="text-light small mb-3">Inventário (a ser implementado).</div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="rollModal" tabindex="-1" aria-labelledby="rollModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-secondary text-center">
+      <div class="modal-header">
+        <h5 class="modal-title" id="rollModalLabel">Resultado da Rolagem</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <h4 id="rollModalName" class="mb-3"></h4>
+
+        <div class="d-flex justify-content-center mb-3">
+          <img id="rollModalDice" src="{{ url_for('static', filename='img/dices/' + ficha.dice + '/d1.png') }}"
+               alt="Dado Rolado"
+               width="180" height="210"
+               style="max-width:100%; height:auto; border-radius:8px;">
+        </div>
+
+        <p class="mt-2 mb-0 text-white fs-4">
+          <span class="modal-text-border" id="rollModalDetails"></span>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const diceType = "{{ ficha.dice }}";
+  const dicePath = `/static/img/dices/${diceType}`
+  
+  const modalEl = document.getElementById('rollModal');
+  const modal = new bootstrap.Modal(modalEl);
+  const nameEl = document.getElementById('rollModalName');
+  const detailsEl = document.getElementById('rollModalDetails');
+  const diceImg = document.getElementById('rollModalDice');
+
+  document.querySelectorAll('.pericia-overlay-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const pericia = btn.dataset.pericia;
+      const valor = parseInt(btn.dataset.valor, 10) || 0;
+      const roll = Math.floor(Math.random() * 20) + 1;
+      const total = roll + valor;
+
+      nameEl.textContent = pericia;
+      detailsEl.textContent = "";
+      diceImg.src = `${dicePath}/d1.png`;
+      modal.show();
+
+      let frameCount = 0;
+      const rollDuration = 1200;
+      const frameDelay = 80;
+      const maxFrames = Math.floor(rollDuration / frameDelay);
+
+      let lastAngle = 0;
+
+      const interval = setInterval(() => {
+        const randomFace = Math.floor(Math.random() * 20) + 1;
+        const direction = lastAngle >= 0 ? -1 : 1;
+        const randomAngle = direction * (Math.random() * 10 + 10);
+
+        diceImg.src = `${dicePath}/d${randomFace}.png`;
+        diceImg.style.transform = `rotate(${randomAngle}deg)`;
+
+        lastAngle = randomAngle;
+
+        frameCount++;
+        if (frameCount >= maxFrames) {
+          clearInterval(interval);
+
+          diceImg.style.transform = 'rotate(0deg)';
+          diceImg.src = `${dicePath}/d${roll}.png`;
+
+          detailsEl.textContent = `Total: ${total}  (+${valor})`;
+          detailsEl.classList.remove("critico");
+          detailsEl.classList.remove("falha-critica");
+          if (roll === 20) detailsEl.classList.add("critico");
+          if (roll === 1) detailsEl.classList.add("falha-critica");
+        }
+      }, frameDelay);
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  const fichaContainer = document.querySelector('.ficha-container');
+  const fichaId = fichaContainer?.dataset.fichaId;
+  const hpAt = document.getElementById('hp-atual');
+  const hpMax = document.getElementById('hp-max');
+  const hpBar = document.getElementById('hp-bar');
+  const plus = document.getElementById('hp-plus');
+  const minus = document.getElementById('hp-minus');
+  const plus5 = document.getElementById('hp-plus-5');
+  const minus5 = document.getElementById('hp-minus-5');
+
+  const toInt = el => parseInt(el.textContent || '0', 10) || 0;
+
+  function updateHpBar() {
+    const cur = toInt(hpAt);
+    const max = toInt(hpMax);
+    hpBar.style.width = max > 0 ? `${Math.max(0, Math.min(100, (cur / max) * 100))}%` : "0%";
+  }
+
+  async function syncHpWithServer(newHp) {
+    if (!fichaId) return;
+    try {
+      await fetch(`/api/update_hp/${fichaId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ vida_atual: newHp })
+      });
+    } catch (err) {
+      console.warn("Falha ao atualizar HP no servidor:", err);
+    }
+  }
+
+  function changeHp(amount) {
+    let cur = toInt(hpAt);
+    const max = toInt(hpMax);
+    const newHp = Math.min(max, Math.max(0, cur + amount));
+    hpAt.textContent = newHp;
+    updateHpBar();
+    syncHpWithServer(newHp);
+  }
+
+  plus?.addEventListener('click', () => changeHp(1));
+  minus?.addEventListener('click', () => changeHp(-1));
+  plus5?.addEventListener('click', () => changeHp(5));
+  minus5?.addEventListener('click', () => changeHp(-5));
+
+  updateHpBar();
+});
+</script>
+
 {% endblock %}
