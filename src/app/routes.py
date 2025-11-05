@@ -390,6 +390,24 @@ def update_hp(id_ficha):
 
     return jsonify({"success": True, "vida_atual": ficha.vida_atual})
 
+@app.route('/api/update_config/<id_ficha>', methods=["POST"])
+def update_config(id_ficha):
+    ficha = Ficha.query.filter_by(uuid=id_ficha).first()
+    if not ficha:
+        flash('Ficha não encontrada.', 'alert-danger')
+        return redirect(url_for('ficha_view', id_ficha=id_ficha))
+
+    visible_value = request.form.get("visible")
+    dice = request.form.get("dice")
+
+
+    ficha.visible = True if visible_value == "publica" else False
+    ficha.dice = dice or ficha.dice
+    users_database.session.commit()
+
+    flash('Ficha atualizada com sucesso.', 'alert-success')
+    return redirect(url_for('ficha_view', id_ficha=id_ficha))
+
 @app.route('/admin/ficha/<int:id>')
 @login_required
 def admin_ficha(id):

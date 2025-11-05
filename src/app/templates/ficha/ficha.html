@@ -18,6 +18,14 @@
       <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-inv" data-bs-toggle="tab" data-bs-target="#tabInv" type="button" role="tab">Inventário</button>
       </li>
+      {% if editable %}
+      <li class="nav-item ms-auto" role="presentation">
+        <button type="button" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1"
+                data-bs-toggle="modal" data-bs-target="#configModal">
+          <img src="{{ url_for('static', filename='img/settings.svg') }}" class="icon-settings" alt="Configurações">
+        </button>
+      </li>
+      {% endif %}
     </ul>
 
     <div class="tab-content">
@@ -29,14 +37,16 @@
             <h3 class="text-light m-0">{{ ficha.nome_personagem or '— Sem Nome —' }}</h3>
 
             <p class="text-level mb-1">Nível {{ nivel or 1 }}
-            {% if ficha.level_up %}
+            {% if ficha.level_up and editable%}
                 <a href="{{ url_for('home') }}" class="btn btn-level-up-mini mt-2 mb-2">Subir de nível</a>
             {% endif %}
             </p>
 
             <div class="d-flex align-items-center gap-2 mt-2">
+              {% if editable %}
               <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-minus-5">−5</button>
               <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-minus">−</button>
+              {% endif %}
               <div class="hp-box">
                 <div class="hp-bar" id="hp-bar"></div>
                 <div class="hp-display">
@@ -44,8 +54,10 @@
                   <span id="hp-max">{{ ficha.vida_maxima or 0 }}</span>
                 </div>
               </div>
+              {% if editable %}
               <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-plus">+</button>
               <button type="button" class="btn btn-sm btn-outline-light hp-btn" id="hp-plus-5">+5</button>
+              {% endif %}
             </div>
           </div>
 
@@ -60,9 +72,11 @@
               <div class="atributo-box text-center">
                 <div class="atributo-label">{{ nome }}</div>
                 <div class="atributo-val">{{ valor }}</div>
-                
+
+                {% if editable %}
                 <button type="button" class="pericia-overlay-btn" aria-label="Usar {{ nome }}" 
                 data-pericia="{{ nome }}" data-valor="{{ valor }}"></button>
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -88,8 +102,11 @@
                   <span class="badge bg-secondary">{{ atributo }}</span>
                   <span class="badge bg-primary">+{{ total }}</span>
                 </div>
+
+                {% if editable %}
                 <button type="button" class="pericia-overlay-btn" aria-label="Usar {{ nome }}" 
                         data-pericia="{{ nome }}" data-valor="{{ total }}"></button>
+                {% endif %}
               </div>
             {% endfor %}
           </div>
@@ -120,12 +137,14 @@
             </div>
             <div class="col-md-6">
               <label class="form-label text-light">Favoritos</label>
-              <textarea name="notas_personagem" class="form-control" rows="3">{{ ficha.favoritos_personagem or '' }}</textarea>
+              <textarea name="favoritos_personagem" class="form-control" rows="3">{{ ficha.favoritos_personagem or '' }}</textarea>
             </div>
           </div>
+          {% if editable %}
           <div class="text-end">
             <button type="submit" class="btn btn-ficha">Salvar</button>
           </div>
+          {% endif %}
         </form>
       </div>
 
@@ -162,16 +181,63 @@
   </div>
 </div>
 
+<div class="modal fade" id="configModal" tabindex="-1" aria-labelledby="configModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header">
+        <h5 class="modal-title" id="configModalLabel">Configurações da Ficha</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <form method="POST" action="{{ url_for('update_config', id_ficha=ficha.uuid) }}">
+        <div class="modal-body">
+          {{ csrf_token() if csrf_token is defined else '' }}
+          
+          <div class="mb-3">
+            <label for="diceSelect" class="form-label text-light">Tipo de Dado</label>
+            <select class="form-select" id="diceSelect" name="dice">
+              <option value="crowned" {% if ficha.dice == 'crowned' %}selected{% endif %}>Crowned</option>
+              <option value="astral" {% if ficha.dice == 'astral' %}selected{% endif %}>Astral</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="visible" class="form-label text-light">Visibilidade da Ficha</label>
+            <select class="form-select" id="visible" name="visible">
+              <option value="publica" {% if ficha.visible == True %}selected{% endif %}>Pública</option>
+              <option value="privada" {% if ficha.visible == False %}selected{% endif %}>Privada</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-ficha">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const diceType = "{{ ficha.dice }}";
   const dicePath = `/static/img/dices/${diceType}`
+  const test = []
+  test.push(dicePath)
   
   const modalEl = document.getElementById('rollModal');
   const modal = new bootstrap.Modal(modalEl);
   const nameEl = document.getElementById('rollModalName');
   const detailsEl = document.getElementById('rollModalDetails');
   const diceImg = document.getElementById('rollModalDice');
+
+  const diceCache = [];
+  
+  for (let i = 1; i <= 20; i++) {
+    const img = new Image();
+    img.src = `${dicePath}/d${i}.png`;
+    diceCache.push(img);
+  }
 
   document.querySelectorAll('.pericia-overlay-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -182,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       nameEl.textContent = pericia;
       detailsEl.textContent = "";
-      diceImg.src = `${dicePath}/d1.png`;
+      diceImg.src = diceCache[0].src;
       modal.show();
 
       let frameCount = 0;
@@ -197,7 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const direction = lastAngle >= 0 ? -1 : 1;
         const randomAngle = direction * (Math.random() * 10 + 10);
 
-        diceImg.src = `${dicePath}/d${randomFace}.png`;
+        diceImg.src = diceCache[randomFace-1].src;
         diceImg.style.transform = `rotate(${randomAngle}deg)`;
 
         lastAngle = randomAngle;
@@ -207,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
           clearInterval(interval);
 
           diceImg.style.transform = 'rotate(0deg)';
-          diceImg.src = `${dicePath}/d${roll}.png`;
+          diceImg.src = diceCache[roll-1].src;
 
           detailsEl.textContent = `Total: ${total}  (+${valor})`;
           detailsEl.classList.remove("critico");

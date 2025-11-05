@@ -2,30 +2,39 @@
 
 {% block body %}
 
-    <div class="container">
-        <h1 class="py-3 text-light">Players</h1>
-        <br>
-        <div class="row row-cols-md-5 g-4">
-            {% for user in users_list %}
-                <div class="col col-2 mb-4">
-                    <div class="card h-100 w-100 bg-secondary">
-                        <img src="{{ url_for('static', filename='profile_pictures/{}'.format(user.profile_picture)) }}" class="card-img-top" height="175" alt="{{ user.profile_picture }}">
-                        <div class="card-body">
-                        <h5 class="card-title text-center justify-content-center">{{ user.username }}
-                        <br>
-                        <h8>{{ user.ficha.nome_personagem }}</h3>
-                        {% if user.is_admin %}
-                            <h5 class="card-title text-center text-danger border border-black rounded-pill" 
-                                style="--bs-border-opacity: .75; --bs-text-opacity: .8">Mestre</h5></h5>
-                        {% else %}
-                            <h5 class="card-title text-center text-dark border border-black rounded-pill"
-                            style="--bs-border-opacity: .75; --bs-text-opacity: .8">Player</h5>
-                        {% endif %}
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+<div class="container py-4">
+  <h1 class="text-light mb-4">Players</h1>
+
+  <div class="players-grid">
+    {% for user in users_list %}
+    <div class="player-card">
+      <div class="player-avatar">
+        <img
+          src="{{ url_for('static', filename='profile_pictures/{}'.format(user.profile_picture)) }}"
+          alt="{{ user.profile_picture }}"
+        >
+      </div>
+
+      <div class="player-info">
+        <h5 class="username">{{ user.username }}</h5>
+        {% if user.is_admin %}
+          <span class="badge-role">Mestre</span>
+        {% elif user.ficha %}
+          {% if user.ficha.visible %}
+            <a href="{{ url_for('ficha_view', id_ficha=user.ficha.uuid) }}" class="character-tag clickable">
+            {{ user.ficha.nome_personagem }}
+            </a>
+          {% else %}
+            <span class="character-tag">
+            {{ user.ficha.nome_personagem }}
+            </span>
+          {% endif %}
+        {% endif %}
+      </div>
     </div>
+    {% endfor %}
+  </div>
+</div>
+
 
 {% endblock %}

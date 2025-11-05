@@ -257,9 +257,55 @@ textarea.form-control:focus {
 }
 
 #rollModalDice {
-  transition: transform 0.12s ease;
+    transition: transform 0.12s ease;
 }
 
+.icon-settings {
+    width: 18px;
+    height: 18px;
+    filter: invert(100%);
+    transition: filter 0.2s ease;
+}
+
+.icon-settings:hover {
+    filter: invert(0%);
+}
+
+select.form-select {
+    background-color: #222 !important;
+    border: 1px solid #333 !important;
+    color: #e6e6e6 !important;
+    border-radius: 8px;
+    padding: 6px 10px;
+    transition: all 0.2s ease;
+}
+
+select.form-select:hover {
+    background-color: #252525;
+    border-color: #6c63ff;
+}
+
+select.form-select:focus {
+    background-color: #252525;
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 0.15rem rgba(108, 99, 255, 0.3);
+    outline: none;
+}
+
+#configModal .modal-dialog {
+    max-width: 400px;
+}
+
+#configModal .modal-content {
+    border-radius: 10px;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+}
+
+#configModal .modal-header,
+#configModal .modal-footer {
+    border-color: #333;
+}
 
 .modal-text-border {
     background-color: rgba(28, 25, 31, 0.39);
