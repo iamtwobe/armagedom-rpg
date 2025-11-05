@@ -15,7 +15,6 @@ class User(users_database.Model, UserMixin):
     profile_picture = users_database.Column(users_database.String(32), default='default_user_image.jpg', nullable=False)
 
     discord_id = users_database.Column(users_database.Integer, nullable=True)
-    discord_username = users_database.Column(users_database.String(32), nullable=True)
     
     verification_code = users_database.Column(users_database.String(12), nullable=True)
     verification_expires = users_database.Column(users_database.DateTime, nullable=True)

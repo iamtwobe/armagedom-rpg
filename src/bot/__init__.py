@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 from discord.ext.commands import has_permissions, MissingPermissions
 from .bot_commands import *
 import asyncio, random, json
+from ._tasks import _change_player_names
 import time as tm
 
 
@@ -43,6 +44,7 @@ async def on_ready():
             _change_status.cancel()
             await asyncio.sleep(0)
         _change_status.start()
+        _change_player_names.start(bot)
     except RuntimeError:
         pass
 
