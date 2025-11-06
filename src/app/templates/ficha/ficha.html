@@ -195,8 +195,15 @@
           <div class="mb-3">
             <label for="diceSelect" class="form-label text-light">Tipo de Dado</label>
             <select class="form-select" id="diceSelect" name="dice">
+              <option value="black" {% if ficha.dice == 'black' %}selected{% endif %}>Black</option>
+              <option value="white" {% if ficha.dice == 'white' %}selected{% endif %}>White</option>
+              <option value="blue" {% if ficha.dice == 'blue' %}selected{% endif %}>Blue</option>
               <option value="crowned" {% if ficha.dice == 'crowned' %}selected{% endif %}>Crowned</option>
               <option value="astral" {% if ficha.dice == 'astral' %}selected{% endif %}>Astral</option>
+              <option value="goldwhite" {% if ficha.dice == 'goldwhite' %}selected{% endif %}>GoldWhite</option>
+              <option value="rose" {% if ficha.dice == 'rose' %}selected{% endif %}>Rose</option>
+              <option value="lightrose" {% if ficha.dice == 'lightrose' %}selected{% endif %}>Lightrose</option>
+              <option value="witcher" {% if ficha.dice == 'witcher' %}selected{% endif %}>Witcher</option>
             </select>
           </div>
 
