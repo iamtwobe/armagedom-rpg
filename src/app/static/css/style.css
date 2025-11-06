@@ -196,3 +196,112 @@ input[type=number] {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   }
 }
+
+.btn-confirm {
+    background-color: #6c63ff;
+    border: none;
+    color: #e6e6e6;
+    border-radius: 8px;
+    padding: 6px 16px;
+    transition: background 0.2s ease;
+}
+
+.btn-confirm:hover {
+    background-color: #5a54e2;
+}
+
+.discord-card {
+    background-color: #1b1b1b;
+    border: 1px solid #333;
+    border-radius: 1rem;
+    color: #e6e6e6;
+    padding: 1.5rem;
+}
+
+.discord-id-input {
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border: 2px solid #242a30;
+}
+
+.discord-id-input:focus {
+    background-color: #f6f7f8;
+    border-color: #464e55;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(36, 42, 48, 0.3);
+}
+
+.discord-form-control {
+    max-width: 260px;
+    text-align: left;
+}
+
+#toast-container {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 5000;
+}
+
+.toast-flash {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-width: 250px;
+    max-width: 400px;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    color: #f8f9fa;
+    font-size: 0.9rem;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    animation: fadeIn 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast-flash.alert-success {
+    background: linear-gradient(90deg, #4caf50);
+}
+
+.toast-flash.alert-danger,
+.toast-flash.alert-error {
+    background: linear-gradient(90deg, #e63946);
+}
+
+.toast-flash.alert-warning {
+    background: linear-gradient(90deg, #ffb347, #ff9966);
+    color: #222;
+}
+
+.toast-flash.alert-info {
+    background: linear-gradient(90deg, #6c63ff, #7c75ff);
+}
+
+.toast-flash .close-btn {
+    background: none;
+    border: none;
+    color: #f8f9fa;
+    font-size: 1.3rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    transition: opacity 0.2s;
+}
+
+.toast-flash .close-btn:hover {
+    opacity: 0.7;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

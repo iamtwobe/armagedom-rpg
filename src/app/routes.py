@@ -53,7 +53,7 @@ def signup():
 @app.route('/players', methods=['GET'])
 @login_required
 def players():
-    users_list = User.query.all()
+    users_list = User.query.order_by(User.is_admin.desc()).all()
     return render_template('players.html', users_list=users_list)
 
 def save_image(old_image, image):

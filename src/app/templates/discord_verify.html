@@ -2,36 +2,40 @@
 {% block body %}
 <div class="container mt-5">
 
-  <div id="step1">
+  <div id="step1" class="text-white discord-card">
     <h4>Verificação do Discord</h4>
     <p>Informe o seu ID do Discord para receber o código de verificação.</p>
-    <p>Caso você não saiba seu ID, digite "a!meuid" no chat do servidor e depois checar o privado.</p>
+    <p>Caso você não saiba seu ID, digite "a!meuid" no chat do servidor (ou no privado do bot) e depois cheque seu privado.</p>
+    <br>
+    <hr class="text-white">
 
-    <form id="discordForm" method="post" action="{{ url_for('verify') }}">
+    <form class="discord-form-control" id="discordForm" method="post" action="{{ url_for('verify') }}">
       {{ form_verify_discord.hidden_tag() }}
       <div class="mb-3">
         {{ form_verify_discord.discord_id.label(class="form-label") }}
-        {{ form_verify_discord.discord_id(class="form-control", placeholder="Ex: 123456789012345678", inputmode="numeric") }}
+        {{ form_verify_discord.discord_id(class="form-control discord-id-input", placeholder="Ex: 123456789012345678", inputmode="numeric") }}
         <div class="invalid-feedback">Apenas números são permitidos no ID do Discord.</div>
       </div>
-      <button type="submit" class="btn btn-primary">Enviar código</button>
+      <button type="submit" class="btn btn-confirm">Enviar código</button>
     </form>
 
     <div id="responseMessage" class="mt-3"></div>
   </div>
 
-  <div id="step2" style="display: none;">
+  <div id="step2" class="text-white discord-card" style="display: none;">
     <h4>Confirmação</h4>
     <p>Insira o código que você recebeu no Discord.</p>
+    <br>
+    <hr class="text-white">
 
-    <form id="codeForm" method="post" action="{{ url_for('verify') }}">
+    <form class="discord-form-control" id="codeForm" method="post" action="{{ url_for('verify') }}">
       <div class="mb-3">
         <label for="verification_code" class="form-label">Código de verificação</label>
         <input type="text" class="form-control" id="verification_code" name="verification_code" 
                maxlength="24" pattern="[A-Fa-f0-9]{24}" inputmode="text" required>
         <div class="invalid-feedback">O código deve ter 24 caracteres hexadecimais.</div>
       </div>
-      <button type="submit" class="btn btn-success">Confirmar</button>
+      <button type="submit" class="btn btn-confirm">Confirmar</button>
     </form>
 
     <div id="codeResponse" class="mt-3"></div>

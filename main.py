@@ -24,11 +24,12 @@ def run_gunicorn(port: int):
     gunicorn_process = subprocess.Popen([
         "gunicorn",
         "-k", "gthread",
-        "-w", "1",
+        "-w", "6",
         "-b", f"127.0.0.1:{port}",
         "--threads", "8",
         "main:app",
-        "--timeout", "120",
+        "--timeout", "60",
+        "--preload",
         "--access-logfile", "-",
         "--logger-class", "src.utils.gunicorn_logger.ColorLogger",
         "--access-logformat", '%(h)s - - %(t)s "%(r)s" %(s)s'
