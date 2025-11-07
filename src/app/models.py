@@ -39,7 +39,7 @@ class Ficha(users_database.Model):
 
     nivel = users_database.Column(users_database.SmallInteger, default=1, nullable=False)
     level_up = users_database.Column(users_database.Boolean, default=False, nullable=False)
-    dice = users_database.Column(users_database.SmallInteger, default='crowned', nullable=False)
+    dice = users_database.Column(users_database.SmallInteger, default='black', nullable=False)
 
     vida_maxima = users_database.Column(users_database.SmallInteger, nullable=False)
     vida_atual = users_database.Column(users_database.SmallInteger, nullable=False)

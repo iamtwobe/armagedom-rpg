@@ -39,6 +39,8 @@ def logout():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if current_user.is_authenticated:
+        return redirect(url_for('home'))
     form_signup = FormSignup()
     if form_signup.validate_on_submit() and 'submit_button_signup' in request.form:
         crypt_password = bcrypt.generate_password_hash(form_signup.password.data)
