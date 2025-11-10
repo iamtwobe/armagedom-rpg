@@ -8,15 +8,12 @@
 <div class="container py-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="text-light mb-0">Iniciativas</h1>
-    {% if not iniciativa %}
-      <button class="btn btn-outline-light" id="openModal">Criar iniciativa</button>
-    {% endif %}
   </div>
 
   <div class="players-grid">
     {% for i in iniciativa %}
     <div class="player-card {% if i.turno_ativo %}turno-ativo{% endif %}" data-ficha-id="{{ i.ficha.id }}">
-      <div class="player-info">
+      <div class="player-info" data-admin="{% if i.ficha.user.is_admin %}admin{% else %}player{% endif %}">
         <h5 class="username">{{ i.ficha.nome_personagem }}</h5>
       </div>
 
@@ -24,8 +21,8 @@
         <div class="hp-box">
           <div class="hp-bar"></div>
           <div class="hp-display">
-            <span class="hp-atual">{{ i.ficha.vida_atual or 0 }}</span> /
-            <span class="hp-max">{{ i.ficha.vida_maxima or 0 }}</span>
+            <span class="hp-atual">{{ i.ficha.vida_atual or 0 if not i.ficha.user.is_admin else '?'}}</span> /
+            <span class="hp-max">{{ i.ficha.vida_maxima or 0 if not i.ficha.user.is_admin else '?'}}</span>
           </div>
         </div>
 
@@ -35,53 +32,6 @@
       </div>
     </div>
     {% endfor %}
-  </div>
-</div>
-
-<div id="iniciativaModal" class="modal-backdrop" aria-hidden="true">
-  <div class="modal-content-custom" role="dialog" aria-modal="true" aria-labelledby="iniciativaModalLabel">
-    <h4 id="iniciativaModalLabel" class="mb-3">Selecionar fichas</h4>
-
-    <form method="POST">
-      {{ iniciativa_form.hidden_tag() }}
-
-      <div class="modal-fichas-grid">
-        {% for ficha in fichas %}
-          <label class="ficha-select-card">
-            <input type="checkbox" name="fichas" value="{{ ficha.id }}">
-            <div class="ficha-info">
-              <div class="ficha-nome">{{ ficha.nome_personagem }}</div>
-              <div class="ficha-hp">
-                <span class="hp-text">{{ ficha.vida_atual }}/{{ ficha.vida_maxima }} HP</span>
-              </div>
-              <div class="ficha-iniciativa">+{{ ficha.p_iniciativa + ficha.destreza }} iniciativa</div>
-            </div>
-          </label>
-        {% endfor %}
-      </div>
-
-      <div class="modal-footer-custom">
-        <button type="button" class="btn btn-secondary" id="closeModal">Cancelar</button>
-        {{ iniciativa_form.criar_iniciativa(class="btn btn-success") }}
-      </div>
-    </form>
-  </div>
-</div>
-
-
-<div class="iniciativa-footer" aria-hidden="false">
-  <div class="left">
-    {% if iniciativa %}
-    <form method="POST" action="{{ url_for('admin_delete_iniciativas') }}" style="display:inline;">
-      <button type="submit" class="btn btn-outline-danger">Deletar iniciativas</button>
-    </form>
-    {% endif %}
-  </div>
-
-  <div class="center">
-    {% if iniciativa %}
-      <button class="btn btn-success" id="nextTurn">Próximo turno</button>
-    {% endif %}
   </div>
 </div>
 
@@ -101,6 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       fichas.forEach(f => {
         const card = document.querySelector(`.player-card[data-ficha-id="${f.id}"]`);
+        const isAdmin = card.querySelector('.player-info[data-admin=admin]')
+        if (isAdmin) return;
         if (!card) return;
         const hpAt = card.querySelector('.hp-atual');
         const hpMax = card.querySelector('.hp-max');

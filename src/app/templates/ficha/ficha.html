@@ -42,6 +42,9 @@
             {% if ficha.level_up and editable%}
                 <a href="{{ url_for('home') }}" class="btn btn-level-up-mini mt-2 mb-2">Subir de nível</a>
             {% endif %}
+            {% if ficha.iniciativa %}
+                <a href="{{ url_for('iniciativas') }}" class="btn btn-iniciativa-mini mt-2 mb-2">Iniciativa {% if ficha.iniciativa[0].turno_ativo %}(Sua vez!){% endif %}</a>
+            {% endif %}
             </p>
 
             <div class="d-flex align-items-center gap-2 mt-2">

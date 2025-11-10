@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, IntegerField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, IntegerField, SelectMultipleField
 from flask_wtf.file import FileField, FileAllowed
 from wtforms.validators import DataRequired, Length, EqualTo, ValidationError, NumberRange
 from src.app.models import User
@@ -120,3 +120,8 @@ class StepPericiasForm(FlaskForm):
     historia = IntegerField('História', validators=[NumberRange(0, 2)], default=0)
     vontade = IntegerField('Vontade', validators=[NumberRange(0, 2)], default=0)
     finish = SubmitField('Finalizar')
+
+
+class IniciativaForm(FlaskForm):
+    fichas = SelectMultipleField('Fichas', coerce=int, validators=[DataRequired()])
+    criar_iniciativa = SubmitField('Criar iniciativa')

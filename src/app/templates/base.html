@@ -153,6 +153,67 @@
       setTimeout(() => toast.remove(), 400);
     }, 6000);
   });
+
+  async function checkEventos() {
+    try {
+      const res = await fetch("/api/events");
+      if (!res.ok) return;
+      const eventos = await res.json();
+
+      if (!Array.isArray(eventos) || eventos.length === 0) return;
+
+      const payload = {
+        eventos: eventos
+      };
+
+      localStorage.setItem("novos_eventos", JSON.stringify(payload));
+      setTimeout(() => localStorage.removeItem("novos_eventos"), 5000);
+    } catch (err) {
+      console.error("Erro ao buscar eventos:", err);
+    }
+  }
+
+  function criarToast(message, alert = "info") {
+    let container = document.querySelector("#toast-container");
+    if (!container) {
+      container = document.createElement("div");
+      container.id = "toast-container";
+      document.body.appendChild(container);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast-flash alert-${alert}`;
+    toast.innerHTML = `
+      <span>${message}</span>
+      <button class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(10px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 6000);
+  }
+
+  window.addEventListener("storage", e => {
+    if (e.key === "novos_eventos" && e.newValue) {
+      try {
+        const data = JSON.parse(e.newValue);
+        if (data && data.eventos) {
+          data.eventos.forEach(ev => criarToast(ev.message, ev.alert));
+        }
+        localStorage.removeItem("novos_eventos");
+      } catch (err) {
+        console.error("Erro ao processar evento:", err);
+      }
+    }
+  });
+
+  setInterval(checkEventos, 5000);
+  checkEventos();
 </script>
+
 </body>
 </html>

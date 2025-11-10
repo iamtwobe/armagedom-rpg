@@ -7,7 +7,11 @@
 {% block body %}
 <div class="ficha-container mt-5">
   <div class="ficha-card p-4 shadow">
-      <h2 class="mb-4 text-center text-light">Distribuição de Atributos</h2>
+      <h2 class="text-center text-light">Distribuição de Atributos</h2>
+      <p class="text-light text-center mb-4 small">
+      O valor máximo de atributo é <strong>4</strong>. Qualquer atributo acima de <strong>2</strong> custa 2 pontos.
+      Um atributo pode ser reduzido a <strong>0</strong> para restituir 1 ponto.
+    </p>
       <h6 class="text-light text-center mb-3">Pontos restantes: <span id="pontos-restantes" class="fw-bold text-warning">12</span></h6>
       <form method="post">
         {{ form_atributos.hidden_tag() }}

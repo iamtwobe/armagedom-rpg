@@ -84,6 +84,7 @@ class Ficha(users_database.Model):
     user_id = users_database.Column(users_database.Integer, users_database.ForeignKey('user.id'), nullable=False)
     user = users_database.relationship('User', back_populates='ficha')
 
+    iniciativa = users_database.relationship('Iniciativa', back_populates='ficha', cascade='all, delete-orphan')
     inventory = users_database.relationship('Inventory', back_populates='ficha', cascade='all, delete-orphan')
 
 
@@ -100,3 +101,14 @@ class Inventory(users_database.Model):
 
     ficha_id = users_database.Column(users_database.Integer, users_database.ForeignKey('ficha.id'), nullable=False)
     ficha = users_database.relationship('Ficha', back_populates='inventory')
+
+
+
+class Iniciativa(users_database.Model):
+    id = users_database.Column(users_database.Integer, primary_key=True)
+    valor_iniciativa = users_database.Column(users_database.SmallInteger, nullable=False)
+    turno_ativo = users_database.Column(users_database.Boolean, nullable=False, default=False)
+    
+
+    ficha_id = users_database.Column(users_database.Integer, users_database.ForeignKey('ficha.id'), nullable=False, unique=True)
+    ficha = users_database.relationship('Ficha', back_populates='iniciativa')

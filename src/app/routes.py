@@ -1,14 +1,20 @@
 from flask import render_template, request, flash, redirect, url_for, jsonify, session
 from src.app import app, users_database, bcrypt
-from src.app.models import User, Ficha
-from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormLinkDiscord, StepNomeForm, StepAtributosForm, StepPericiasForm
+from src.app.models import User, Ficha, Inventory, Iniciativa
+from src.app.forms import (
+    FormLogin, FormSignup, FormEditProfile, FormLinkDiscord,
+    StepNomeForm, StepAtributosForm, StepPericiasForm, IniciativaForm
+    )
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
 from datetime import datetime, timedelta
 from functools import wraps
 from PIL import Image
+import time
+import random
 import os
 
+eventos_ativos = []
 
 @app.route('/')
 def home():
@@ -167,7 +173,7 @@ def verify():
 @app.route('/criarficha', methods=['GET', 'POST'])
 @login_required
 def criarficha():
-    if current_user.id in Ficha.query.all():
+    if current_user.id in Ficha.query.all() and not current_user.is_admin:
         return redirect(url_for('ficha_load'))
     if not current_user.discord_id:
         flash('Por favor, verifique seu discord primeiro.', 'alert-warning')
@@ -372,7 +378,44 @@ def ficha_view(id_ficha):
 
     return render_template('ficha/ficha.html', ficha=ficha, pericias=_pericias, editable=editable)
 
+@app.route('/iniciativas', methods=["GET"])
+@login_required
+def iniciativas():
+    iniciativa = Iniciativa.query.order_by(Iniciativa.valor_iniciativa.desc()).all()
+    if not iniciativa:
+        flash('Nenhuma iniciativa agora.', 'alert-danger')
+        return redirect(url_for('home'))
+    if not current_user.ficha.iniciativa:
+        flash('Você não está na iniciativa atual.', 'alert-danger')
+        return redirect(url_for('home'))
+
+    return render_template('iniciativas.html', iniciativa=iniciativa)
+
+@app.route('/api/broadcast', methods=["POST"])
+def broadcast():
+    data = request.get_json()
+    if not data or "message" not in data or "alert" not in data:
+        return jsonify({"error": "Dados inválidos"}), 400
+
+    eventos_ativos.append({
+        "message": data["message"],
+        "alert": data["alert"],
+        "timestamp": time.time()        
+    })
+
+    return jsonify({"success": True})
+
+@app.route("/api/events")
+def events_api():
+    global eventos_ativos
+
+    agora = time.time()
+    eventos_ativos = [e for e in eventos_ativos if agora - e["timestamp"] < 5]
+
+    return jsonify(eventos_ativos)
+
 @app.route('/api/update_hp/<id_ficha>', methods=["POST"])
+@login_required
 def update_hp(id_ficha):
     ficha = Ficha.query.filter_by(id=id_ficha).first()
     if not ficha:
@@ -412,6 +455,7 @@ def update_config(id_ficha):
     return redirect(url_for('ficha_view', id_ficha=id_ficha))
 
 @app.route('/api/fichas/status', methods=["GET"])
+@login_required
 def _get_fichas_status():
     fichas = Ficha.query.with_entities(Ficha.id, Ficha.nome_personagem, Ficha.vida_atual, Ficha.vida_maxima).all()
 
@@ -433,34 +477,107 @@ def admin_required(func):
         return func(*args, **kwargs)
     return wrapper
 
-@app.route('/admin/routes')
+@app.route('/api/iniciativas/status', methods=["GET"])
+@login_required
+def iniciativas_status():
+    iniciativas = Iniciativa.query.all()
+    data = [{
+        "ficha_id": i.ficha_id,
+        "turno_ativo": i.turno_ativo
+    } for i in iniciativas]
+    return jsonify(data)
+
+@app.route('/api/iniciativas/proximo_turno', methods=["POST"])
+@login_required
+@admin_required
+def iniciativas_proximo_turno():
+    iniciativas = Iniciativa.query.order_by(Iniciativa.valor_iniciativa.desc()).all()
+    if not iniciativas:
+        return jsonify({"ok": False})
+
+    atual = next((i for i in iniciativas if i.turno_ativo), None)
+    if not atual:
+        iniciativas[0].turno_ativo = True
+    else:
+        atual.turno_ativo = False
+        idx = iniciativas.index(atual)
+        proximo = iniciativas[idx + 1] if idx + 1 < len(iniciativas) else iniciativas[0]
+        proximo.turno_ativo = True
+
+    users_database.session.commit()
+    eventos_ativos.append({
+        "message": f"É o turno de {proximo.ficha.nome_personagem}",
+        "alert": "info",
+        "timestamp": time.time()
+    })
+    return jsonify({"ok": True})
+
+@app.route('/admin/iniciativas/delete', methods=["POST"])
+@login_required
+@admin_required
+def admin_delete_iniciativas():
+    Iniciativa.query.delete()
+    users_database.session.commit()
+    flash("Iniciativas deletadas com sucesso.", "alert-danger")
+    return redirect(url_for('admin_iniciativas'))
+
+@app.route('/admin/routes', methods=["GET"])
 @login_required
 @admin_required
 def admin_routes():
     return render_template('admin/admin_routes.html')
 
-@app.route('/admin/fichas')
+@app.route('/admin/fichas', methods=["GET"])
 @login_required
 @admin_required
 def admin_fichas():
     fichas = Ficha.query.order_by().all()
     return render_template('admin/admin_fichas.html', fichas=fichas)
 
-@app.route('/admin/iniciativas')
+@app.route('/admin/iniciativas', methods=["GET", "POST"])
 @login_required
 @admin_required
 def admin_iniciativas():
-    fichas = Ficha.query.all()
-    return render_template('admin/admin_iniciativas.html', fichas=fichas)
+    iniciativa_form = IniciativaForm()
 
-@app.route('/admin/levels')
+    fichas = Ficha.query.all()
+    iniciativa = Iniciativa.query.order_by(Iniciativa.valor_iniciativa.desc()).all()
+    
+    iniciativa_form.fichas.choices = [(f.id, f.nome_personagem) for f in fichas]
+
+    if request.method == "POST":
+        if iniciativa_form.validate_on_submit():
+            fichas_ids = request.form.getlist("fichas")
+
+            for ficha_id in fichas_ids:
+                ficha = Ficha.query.get(ficha_id)
+                if not ficha:
+                    continue
+                
+                valor_iniciativa = random.randint(1, 20) + (ficha.p_iniciativa + ficha.destreza)
+                if ficha:
+                    iniciativa = Iniciativa(
+                        ficha=ficha,
+                        valor_iniciativa=valor_iniciativa,
+                        turno_ativo=False
+                    )
+                    users_database.session.add(iniciativa)
+
+
+            users_database.session.commit()
+            flash(f"{len(fichas_ids)} iniciativas criadas com sucesso!", "alert-success")
+            return redirect(url_for('admin_iniciativas'))
+
+    return render_template('admin/admin_iniciativas.html', fichas=fichas, iniciativa=iniciativa, iniciativa_form=iniciativa_form)
+
+@app.route('/admin/levels', methods=["GET", "POST"])
 @login_required
 @admin_required
 def admin_levels():
     fichas = Ficha.query.all()
     return render_template('admin/admin_levels.html', fichas=fichas)
 
-@app.route('/admin/console')
+@app.route('/admin/console', methods=["GET", "POST"])
 @login_required
 @admin_required
 def admin_console():
