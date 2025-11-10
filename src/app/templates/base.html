@@ -34,10 +34,16 @@
         <li class="nav-item me-1 mt-1">
           <a class="nav-link" href="{{ url_for('ficha_load') }}">Ficha</a>
         </li>
+
       </ul>
 
       <ul class="navbar-nav mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
+        {% if current_user.is_admin %}
+        <li class="nav-item me-1 mt-1">
+          <a class="nav-link" href="{{ url_for('admin_routes') }}">Admin</a>
+        </li>
+        {% endif %}
         <li class="nav-item dropdown me-1 mt-1" style="list-style: none;">
           <a class="nav-link dropdown-toggle p-0" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="{{ url_for('static', filename='profile_pictures/{}'.format(current_user.profile_picture)) }}"
@@ -90,6 +96,11 @@
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('ficha_load') }}">Ficha</a>
           </li>
+          {% if not current_user.is_admin %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('admin_routes') }}">Admin</a>
+          </li>
+          {% endif %}
         </ul>
 
         <hr class="border-secondary">

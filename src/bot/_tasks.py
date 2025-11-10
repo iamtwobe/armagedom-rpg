@@ -21,7 +21,7 @@ async def _change_player_names(bot):
         _member_cache = []
 
         with app.app_context():
-            users_list = User.query.filter(User.discord_id.isnot(None)).all()
+            users_list = User.query.filter(User.discord_id.isnot(None), User.is_admin.isnot(True)).all()
 
             for user in users_list:
                 if not user.ficha:

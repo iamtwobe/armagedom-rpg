@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block head %}
+<style>
+  .hp-box {
+      position: relative;
+      background: #2c2c2c;
+      border-radius: 10px;
+      overflow: hidden;
+      width: 220px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  .hp-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: linear-gradient(90deg, #dc3545, #ff7675);
+      border-radius: 8px;
+      transition: width 0.4s ease;
+      z-index: 1;
+  }
+
+  .hp-display {
+      position: relative;
+      z-index: 2;
+      font-weight: 500;
+      color: #e6e6e6;
+      font-size: 0.95rem;
+  }
+</style>
+{% endblock %}
+
+{% block body %}
+
+<div class="container py-4">
+  <h1 class="text-light mb-4">Fichas</h1>
+
+  <div class="players-grid">
+    {% for ficha in fichas %}
+    <div class="player-card">
+      <div class="player-info" data-ficha-id="{{ ficha.id }}">
+        <h5 class="username">{{ ficha.nome_personagem }}</h5>
+              <div class="d-flex align-items-center gap-2 mt-2">
+
+              <div class="hp-box">
+                <div class="hp-bar" id="hp-bar"></div>
+                <div class="hp-display">
+                  <span class="hp-atual">{{ ficha.vida_atual or 0 }}</span> /
+                  <span class="hp-max">{{ ficha.vida_maxima or 0 }}</span>
+                </div>
+              </div>
+
+            </div>
+            <a href="{{ url_for('ficha_view', id_ficha=ficha.uuid) }}" class="character-tag clickable mt-2">
+            Ficha
+            </a>
+          </div>
+        </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const cards = document.querySelectorAll('.player-info');
+
+  function updateHpBars(fichas) {
+    fichas.forEach(f => {
+      const card = document.querySelector(`.player-info[data-ficha-id="${f.id}"]`);
+      if (!card) return;
+      const hpAt = card.querySelector('.hp-atual');
+      const hpMax = card.querySelector('.hp-max');
+      const hpBar = card.querySelector('.hp-bar');
+      
+      const cur = parseInt(f.vida_atual || 0);
+      const max = parseInt(f.vida_maxima || 0);
+      const percent = max > 0 ? Math.max(0, Math.min(100, (cur / max) * 100)) : 0;
+      
+      hpAt.textContent = cur;
+      hpMax.textContent = max;
+      hpBar.style.width = percent + "%";
+    });
+  }
+
+  async function refresh() {
+    try {
+      const res = await fetch('/api/fichas/status');
+      const fichas = await res.json();
+      updateHpBars(fichas);
+    } catch (e) {
+      console.error('Erro ao atualizar HP:', e);
+    }
+  }
+
+  setInterval(refresh, 15000);
+  refresh();
+});
+</script>
+
+{% endblock %}

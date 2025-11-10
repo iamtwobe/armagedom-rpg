@@ -18,7 +18,7 @@
       <div class="player-info">
         <h5 class="username">{{ user.username }}</h5>
         {% if user.is_admin %}
-          <span class="badge-role">Mestre</span>
+          <span class="badge-role mt-2">Mestre</span>
         {% elif user.ficha %}
           {% if user.ficha.visible %}
             <a href="{{ url_for('ficha_view', id_ficha=user.ficha.uuid) }}" class="character-tag clickable">

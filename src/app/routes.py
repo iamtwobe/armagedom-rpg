@@ -5,6 +5,7 @@ from src.app.forms import FormLogin, FormSignup, FormEditProfile, FormLinkDiscor
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
 from datetime import datetime, timedelta
+from functools import wraps
 from PIL import Image
 import os
 
@@ -392,6 +393,7 @@ def update_hp(id_ficha):
     return jsonify({"success": True, "vida_atual": ficha.vida_atual})
 
 @app.route('/api/update_config/<id_ficha>', methods=["POST"])
+@login_required
 def update_config(id_ficha):
     ficha = Ficha.query.filter_by(uuid=id_ficha).first()
     if not ficha:
@@ -409,13 +411,60 @@ def update_config(id_ficha):
     flash('Ficha atualizada com sucesso.', 'alert-success')
     return redirect(url_for('ficha_view', id_ficha=id_ficha))
 
-@app.route('/admin/ficha/<int:id>')
+@app.route('/api/fichas/status', methods=["GET"])
+def _get_fichas_status():
+    fichas = Ficha.query.with_entities(Ficha.id, Ficha.nome_personagem, Ficha.vida_atual, Ficha.vida_maxima).all()
+
+    data = [
+        {
+            "id": f.id, "nome_personagem": f.nome_personagem,
+            "vida_atual": f.vida_atual, "vida_maxima": f.vida_maxima
+        }
+        for f in fichas
+    ]
+    return jsonify(data)
+
+def admin_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        if not current_user.is_admin:
+            flash('Você não tem permissão para acessar essa página.', 'alert-danger')
+            return redirect(url_for('home'))
+        return func(*args, **kwargs)
+    return wrapper
+
+@app.route('/admin/routes')
 @login_required
-def admin_ficha(id):
-    if not current_user.is_admin:
-        return redirect(url_for('home'))
-    ficha = Ficha.query.get_or_404(id)
-    return render_template('admin/admin_ficha.html', ficha=ficha)
+@admin_required
+def admin_routes():
+    return render_template('admin/admin_routes.html')
+
+@app.route('/admin/fichas')
+@login_required
+@admin_required
+def admin_fichas():
+    fichas = Ficha.query.order_by().all()
+    return render_template('admin/admin_fichas.html', fichas=fichas)
+
+@app.route('/admin/iniciativas')
+@login_required
+@admin_required
+def admin_iniciativas():
+    fichas = Ficha.query.all()
+    return render_template('admin/admin_iniciativas.html', fichas=fichas)
+
+@app.route('/admin/levels')
+@login_required
+@admin_required
+def admin_levels():
+    fichas = Ficha.query.all()
+    return render_template('admin/admin_levels.html', fichas=fichas)
+
+@app.route('/admin/console')
+@login_required
+@admin_required
+def admin_console():
+    return render_template('admin/admin_console.html')
 
 @app.route('/server_status')
 def server_status():

@@ -329,6 +329,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let cur = toInt(hpAt);
     const max = toInt(hpMax);
     const newHp = Math.min(max, Math.max(0, cur + amount));
+    if (hpAt.textContent == newHp) {
+      return
+    }
     hpAt.textContent = newHp;
     updateHpBar();
     syncHpWithServer(newHp);

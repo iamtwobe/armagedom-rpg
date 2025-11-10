@@ -55,12 +55,12 @@ async def _change_status(_status: str = None):
     if _status:
         status = [_status]
     else:
-        statuses = ['A minha criadora']
+        statuses = ['Aguardando o fim.']
         status = random.choice(statuses)
     
     activity = discord.Activity(type=discord.ActivityType.watching, 
-                                name=f'{status} | by iamtwobe',
-                                state='https://linktr.ee/iamtwobe',)
+                                name=f'{status}',
+                                state='by iamtwobe',)
     await bot.change_presence(activity=activity, status=discord.Status.online)
 
 
