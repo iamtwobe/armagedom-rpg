@@ -154,6 +154,8 @@
     }, 6000);
   });
 
+  let lastEventTimestamp = 0;
+
   async function checkEventos() {
     try {
       const res = await fetch("/api/events");
@@ -162,12 +164,16 @@
 
       if (!Array.isArray(eventos) || eventos.length === 0) return;
 
-      const payload = {
-        eventos: eventos
-      };
+      const novos = eventos.filter(e => e.timestamp > lastEventTimestamp);
+      if (novos.length === 0) return;
 
+      lastEventTimestamp = Math.max(...novos.map(e => e.timestamp));
+
+      novos.forEach(ev => criarToast(ev.message, ev.alert));
+
+      const payload = { eventos: novos };
       localStorage.setItem("novos_eventos", JSON.stringify(payload));
-      setTimeout(() => localStorage.removeItem("novos_eventos"), 5000);
+      setTimeout(() => localStorage.removeItem("novos_eventos"), 15000);
     } catch (err) {
       console.error("Erro ao buscar eventos:", err);
     }
@@ -202,16 +208,19 @@
       try {
         const data = JSON.parse(e.newValue);
         if (data && data.eventos) {
-          data.eventos.forEach(ev => criarToast(ev.message, ev.alert));
+          const novos = data.eventos.filter(ev => ev.timestamp > lastEventTimestamp);
+          if (novos.length === 0) return;
+
+          lastEventTimestamp = Math.max(...novos.map(e => e.timestamp));
+          novos.forEach(ev => criarToast(ev.message, ev.alert));
         }
-        localStorage.removeItem("novos_eventos");
       } catch (err) {
         console.error("Erro ao processar evento:", err);
       }
     }
   });
 
-  setInterval(checkEventos, 5000);
+  setInterval(checkEventos, 10000);
   checkEventos();
 </script>
 

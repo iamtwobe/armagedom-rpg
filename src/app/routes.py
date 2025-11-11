@@ -410,7 +410,7 @@ def events_api():
     global eventos_ativos
 
     agora = time.time()
-    eventos_ativos = [e for e in eventos_ativos if agora - e["timestamp"] < 5]
+    eventos_ativos = [e for e in eventos_ativos if agora - e["timestamp"] < 10]
 
     return jsonify(eventos_ativos)
 

@@ -43,7 +43,6 @@ class Ficha(users_database.Model):
 
     vida_maxima = users_database.Column(users_database.SmallInteger, nullable=False)
     vida_atual = users_database.Column(users_database.SmallInteger, nullable=False)
-    vida_temp = users_database.Column(users_database.SmallInteger, default=0, nullable=False)
 
     forca = users_database.Column(users_database.SmallInteger, nullable=False)
     destreza = users_database.Column(users_database.SmallInteger, nullable=False)
