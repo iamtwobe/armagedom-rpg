@@ -577,12 +577,6 @@ def admin_levels():
     fichas = Ficha.query.all()
     return render_template('admin/admin_levels.html', fichas=fichas)
 
-@app.route('/admin/console', methods=["GET", "POST"])
-@login_required
-@admin_required
-def admin_console():
-    return render_template('admin/admin_console.html')
-
 @app.route('/server_status')
 def server_status():
     return jsonify({"status": "online"}), 200
