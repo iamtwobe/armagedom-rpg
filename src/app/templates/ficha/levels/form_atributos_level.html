@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/criar_ficha.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="ficha-container mt-5">
+  <div class="ficha-card p-4 shadow">
+      <h2 class="text-center text-light">Distribuição de Atributos</h2>
+      <p class="text-light text-center mb-4 small">
+      Escolha uma perícia para adicionar um ponto.
+    </p>
+      <h6 class="text-light text-center mb-3">Pontos restantes: <span id="pontos-restantes" class="fw-bold text-warning">12</span></h6>
+      <form method="post">
+        {{ form_levelup.hidden_tag() }}
+        <div class="row g-3 justify-content-center">
+            {% for field in [form_levelup.forca, form_levelup.destreza, form_levelup.constituicao, form_levelup.carisma, form_levelup.inteligencia] %}
+                <div class="ficha-atributo">
+                {{ field.label(class="form-label text-light fw-semibold") }}
+                <div class="input-group ficha-input-group">
+                    <button type="button" class="btn btn-outline-light btn-decrement" data-target="{{ field.id }}">−</button>
+                    {{ field(value=ficha[field.name], class="form-control text-center ficha-input form-atributo-input", min=0, readonly=True) }}
+                    <button type="button" class="btn btn-outline-light btn-increment" data-target="{{ field.id }}">+</button>
+                </div>
+                {% for e in field.errors %}
+                    <div class="text-danger small">{{ e }}</div>
+                {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-end mt-4">
+          {{ form_levelup.finish(class="btn btn-ficha") }}
+        </div>
+      </form>
+  </div>
+</div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const atributos = ['forca', 'destreza', 'constituicao', 'carisma', 'inteligencia'];
+    const pontosIniciais = 1;
+
+    const spanPontos = document.getElementById('pontos-restantes');
+    const pontosField = document.getElementById('pontos');
+
+    const baseAtributos = {};
+
+    atributos.forEach(attr => {
+        const input = document.getElementById(attr);
+        baseAtributos[attr] = parseInt(input.value);
+    });
+
+    function calcularPontos() {
+
+    let totalGasto = 0;
+
+    atributos.forEach(attr => {
+
+        const base = baseAtributos[attr];
+        const valor = parseInt(document.getElementById(attr).value);
+
+        totalGasto += (valor - base);
+
+    });
+
+    const restantes = pontosIniciais - totalGasto;
+
+    spanPontos.textContent = restantes;
+
+    spanPontos.classList.toggle('text-danger', restantes < 0);
+
+    if (pontosField) pontosField.value = restantes;
+
+    return restantes;
+}
+
+    document.querySelectorAll('.btn-increment, .btn-decrement').forEach(btn => {
+        btn.addEventListener('click', () => {
+        const targetId = btn.dataset.target;
+        const input = document.getElementById(targetId);
+        let value = parseInt(input.value, 10);
+        if (isNaN(value)) value = baseAtributos[targetId];
+        const restantes = calcularPontos();
+
+        if (btn.classList.contains('btn-increment') && (restantes > 0)) {
+            value++;
+        } else if (btn.classList.contains('btn-decrement') && (value > baseAtributos[targetId])) {
+            value--;
+        }
+
+        input.value = value;
+        calcularPontos();
+        });
+    });
+
+    calcularPontos();
+
+    document.querySelector('form').addEventListener('submit', function (e) {
+        const pontosRestantes = parseInt(document.getElementById('pontos-restantes').textContent);
+        if (pontosRestantes > 0) {
+            e.preventDefault();
+        }
+        });
+    });
+</script>
+
+
+{% endblock %}

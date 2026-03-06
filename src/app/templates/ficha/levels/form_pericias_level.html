@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/criar_ficha.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="ficha-container mt-5">
+  <div class="ficha-card p-4 shadow">
+    <h2 class="mb-4 text-center text-light">Distribuição de Perícias</h2>
+    <p class="text-light text-center mb-4 small">
+      Selecione até 3 pontos de perícia. Cada perícia pode receber <strong>+1</strong> (custa 1 ponto)
+      ou <strong>+2</strong> (custa 3 pontos). O valor final é somado ao atributo base.
+    </p>
+    
+    <div id="contador-pontos" class="text-center mb-3">
+      <span class="badge pontos-badge fs-6">
+        Pontos restantes: <span id="pontos-restantes">3</span>
+      </span>
+    </div>
+
+    <form method="post">
+      {{ form_levelup.hidden_tag() }}
+      
+      <div class="table-responsive">
+        <table class="table table-dark table-striped align-middle text-center ficha-table">
+          <thead>
+            <tr class="text-warning">
+              <th style="width: 10%;">+2</th>
+              <th style="width: 10%;">+1</th>
+              <th>Perícia</th>
+              <th style="width: 25%;">Atributo</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for nome, valor, atributo in pericias %}
+              {% set attr_map = {
+                'For': 'forca',
+                'Des': 'destreza',
+                'Con': 'constituicao',
+                'Car': 'carisma',
+                'Int': 'inteligencia',
+              } %}
+              {% set attr_key = attr_map.get(atributo, '') %}
+              {% set attr_value = valor + ficha[attr_key] %}
+
+              <tr class="pericia-row">
+                <td>
+                  <input type="radio" name="{{ nome|lower }}" value="2"
+                        id="{{ nome|lower }}_2"
+                        class="form-check-input radio-2">
+                </td>
+                <td>
+                  <input type="radio" name="{{ nome|lower }}" value="1"
+                        id="{{ nome|lower }}_1"
+                        class="form-check-input radio-1">
+                </td>
+                <td>
+                    <label for="{{ nome|lower }}_1" class="form-label text-light mb-0">{{ nome }}</label>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">{{ atributo }}</span>
+                    <span class="badge bg-secondary attr-value" data-base="{{ attr_value }}">+{{ attr_value }}</span>
+                </td>
+              </tr>
+
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-end mt-4">
+        {{ form_levelup.finish(class="btn btn-ficha") }}
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const pontosRestantesSpan = document.getElementById('pontos-restantes');
+    let pontosRestantes = 3;
+    pontosRestantesSpan.textContent = pontosRestantes;
+
+    const form = document.querySelector('form');
+
+    form.addEventListener('submit', e => {
+      if (pontosRestantes > 0) {
+        e.preventDefault();
+        pontosRestantesSpan.classList.add('text-danger');
+        setTimeout(() => pontosRestantesSpan.classList.remove('text-danger'), 500);
+      }
+    });
+
+    document.querySelectorAll('.radio-1, .radio-2').forEach(r => {
+      if (r.checked) r.dataset.selected = 'true';
+    });
+
+    document.querySelectorAll('.radio-1, .radio-2').forEach(radio => {
+      radio.addEventListener('click', function () {
+        const linha = this.closest('tr');
+        const attrValueSpan = linha.querySelector('.attr-value');
+        const baseValue = parseInt(attrValueSpan.dataset.base, 10) || 0;
+
+        const prev = Array.from(linha.querySelectorAll('input[type="radio"]'))
+                          .find(r => r.dataset.selected === 'true');
+
+        if (this.dataset.selected === 'true') {
+          this.checked = false;
+          this.dataset.selected = 'false';
+          const refund = this.classList.contains('radio-2') ? 3 : 1;
+
+          pontosRestantes += refund;
+          attrValueSpan.textContent = `+${baseValue}`;
+          pontosRestantesSpan.textContent = pontosRestantes;
+          return;
+        }
+
+        if (prev && prev !== this) {
+          const prevCost = prev.classList.contains('radio-2') ? 3 : 1;
+          pontosRestantes += prevCost;
+          
+          prev.dataset.selected = 'false';
+          prev.checked = false;
+        }
+
+        const custo = this.classList.contains('radio-2') ? 3 : 1;
+        if (pontosRestantes - custo < 0) {
+          this.checked = false;
+          this.dataset.selected = 'false';
+          pontosRestantesSpan.classList.add('text-danger');
+          setTimeout(() => pontosRestantesSpan.classList.remove('text-danger'), 500);
+          return;
+        }
+
+        this.dataset.selected = 'true';
+        this.checked = true;
+        pontosRestantes -= custo;
+
+        const bonus = this.classList.contains('radio-2') ? 2 : 1;
+
+        attrValueSpan.textContent = `+${baseValue + bonus}`;
+        pontosRestantesSpan.textContent = pontosRestantes;
+      });
+    });
+  });
+</script>
+
+{% endblock %}

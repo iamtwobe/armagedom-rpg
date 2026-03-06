@@ -38,9 +38,9 @@
           <div>
             <h3 class="text-light m-0">{{ ficha.nome_personagem or '— Sem Nome —' }}</h3>
 
-            <p class="text-level mb-1">Nível {{ nivel or 1 }}
+            <p class="text-level mb-1">Nível {{ ficha.nivel or 1 }}
             {% if ficha.level_up and editable%}
-                <a href="{{ url_for('home') }}" class="btn btn-level-up-mini mt-2 mb-2">Subir de nível</a>
+                <a href="{{ url_for('levelup', id_ficha=ficha.uuid) }}" class="btn btn-level-up-mini mt-2 mb-2">Subir de nível</a>
             {% endif %}
             {% if ficha.iniciativa %}
                 <a href="{{ url_for('iniciativas') }}" class="btn btn-iniciativa-mini mt-2 mb-2">Iniciativa {% if ficha.iniciativa[0].turno_ativo %}(Sua vez!){% endif %}</a>

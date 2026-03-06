@@ -122,6 +122,47 @@ class StepPericiasForm(FlaskForm):
     finish = SubmitField('Finalizar')
 
 
+class LevelUp_PericiasForm(FlaskForm):
+    acrobacia = IntegerField('Acrobacia', validators=[NumberRange(0, 2)], default=0)
+    adestramento = IntegerField('Adestramento', validators=[NumberRange(0, 2)], default=0)
+    artes = IntegerField('Artes', validators=[NumberRange(0, 2)], default=0)
+    atletismo = IntegerField('Atletismo', validators=[NumberRange(0, 2)], default=0)
+    ciencias = IntegerField('Ciências', validators=[NumberRange(0, 2)], default=0)
+    crime = IntegerField('Crime', validators=[NumberRange(0, 2)], default=0)
+    enganacao = IntegerField('Enganação', validators=[NumberRange(0, 2)], default=0)
+    fortitude = IntegerField('Fortitude', validators=[NumberRange(0, 2)], default=0)
+    furtividade = IntegerField('Furtividade', validators=[NumberRange(0, 2)], default=0)
+    iniciativa = IntegerField('Iniciativa', validators=[NumberRange(0, 2)], default=0)
+    intimidacao = IntegerField('Intimidação', validators=[NumberRange(0, 2)], default=0)
+    intuicao = IntegerField('Intuição', validators=[NumberRange(0, 2)], default=0)
+    investigacao = IntegerField('Investigação', validators=[NumberRange(0, 2)], default=0)
+    luta = IntegerField('Luta', validators=[NumberRange(0, 2)], default=0)
+    medicina = IntegerField('Medicina', validators=[NumberRange(0, 2)], default=0)
+    oficio = IntegerField('Oficio', validators=[NumberRange(0, 2)], default=0)
+    percepcao = IntegerField('Percepção', validators=[NumberRange(0, 2)], default=0)
+    persuasao = IntegerField('Persuasão', validators=[NumberRange(0, 2)], default=0)
+    pilotagem = IntegerField('Pilotagem', validators=[NumberRange(0, 2)], default=0)
+    pontaria = IntegerField('Pontaria', validators=[NumberRange(0, 2)], default=0)
+    reflexos = IntegerField('Reflexos', validators=[NumberRange(0, 2)], default=0)
+    religiao = IntegerField('Religião', validators=[NumberRange(0, 2)], default=0)
+    sobrevivencia = IntegerField('Sobrevivência', validators=[NumberRange(0, 2)], default=0)
+    tatica = IntegerField('Tática', validators=[NumberRange(0, 2)], default=0)
+    tecnologia = IntegerField('Tecnologia', validators=[NumberRange(0, 2)], default=0)
+    historia = IntegerField('História', validators=[NumberRange(0, 2)], default=0)
+    vontade = IntegerField('Vontade', validators=[NumberRange(0, 2)], default=0)
+    finish = SubmitField('Finalizar')
+
+
+class LevelUp_AtributosForm(FlaskForm):
+    pontos_max = HiddenField(default=1)
+    forca = IntegerField('Força', validators=[NumberRange(0)], render_kw={"id": "forca"})
+    destreza = IntegerField('Destreza', validators=[NumberRange(0)], render_kw={"id": "destreza"})
+    constituicao = IntegerField('Constituição', validators=[NumberRange(0)], render_kw={"id": "constituicao"})
+    carisma = IntegerField('Carisma', validators=[NumberRange(0)], render_kw={"id": "carisma"})
+    inteligencia = IntegerField('Inteligência', validators=[NumberRange(0)], render_kw={"id": "inteligencia"})
+    finish = SubmitField('Finalizar')
+
+
 class IniciativaForm(FlaskForm):
     fichas = SelectMultipleField('Fichas', coerce=int, validators=[DataRequired()])
     criar_iniciativa = SubmitField('Criar iniciativa')

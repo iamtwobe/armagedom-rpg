@@ -3,10 +3,12 @@ from src.app import app, users_database, bcrypt
 from src.app.models import User, Ficha, Inventory, Iniciativa
 from src.app.forms import (
     FormLogin, FormSignup, FormEditProfile, FormLinkDiscord,
-    StepNomeForm, StepAtributosForm, StepPericiasForm, IniciativaForm
+    StepNomeForm, StepAtributosForm, StepPericiasForm, IniciativaForm,
+    LevelUp_PericiasForm, LevelUp_AtributosForm
     )
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
+from src.utils.ficha_utils import get_pericias
 from datetime import datetime, timedelta
 from functools import wraps
 from PIL import Image
@@ -334,35 +336,7 @@ def ficha_view(id_ficha):
     
     editable = ficha.user_id == current_user.id or current_user.is_admin
 
-    _pericias = [
-        ("Acrobacia", ficha.p_acrobacia, "Des"),
-        ("Adestramento", ficha.p_adestramento, "Int"),
-        ("Artes", ficha.p_artes, "Car"),
-        ("Atletismo", ficha.p_atletismo, "For"),
-        ("Ciências", ficha.p_ciencias, "Int"),
-        ("Crime", ficha.p_crime, "Des"),
-        ("Enganação", ficha.p_enganacao, "Car"),
-        ("Fortitude", ficha.p_fortitude, "Con"),
-        ("Furtividade", ficha.p_furtividade, "Des"),
-        ("Iniciativa", ficha.p_iniciativa, "Des"),
-        ("Intimidação", ficha.p_intimidacao, "Car"),
-        ("Intuição", ficha.p_intuicao, "Int"),
-        ("Investigação", ficha.p_investigacao, "Int"),
-        ("Luta", ficha.p_luta, "For"),
-        ("Medicina", ficha.p_medicina, "Int"),
-        (ficha.oficio_nome, ficha.p_oficio, ficha.oficio_atributo[:3].capitalize()),
-        ("Percepção", ficha.p_percepcao, "Des"),
-        ("Persuasão", ficha.p_persuasao, "Car"),
-        ("Pilotagem", ficha.p_pilotagem, "Des"),
-        ("Pontaria", ficha.p_pontaria, "Des"),
-        ("Reflexos", ficha.p_reflexos, "Des"),
-        ("Religião", ficha.p_religiao, "Int"),
-        ("Sobrevivência", ficha.p_sobrevivencia, "Int"),
-        ("Tática", ficha.p_tatica, "Des"),
-        ("Tecnologia", ficha.p_tecnologia, "Int"),
-        ("História", ficha.p_historia, "Int"),
-        ("Vontade", ficha.p_vontade, "Car")
-    ]
+    _pericias = get_pericias(ficha)
 
     if request.method == 'POST' and editable:
         if "historia_personagem" in request.form:
@@ -377,6 +351,57 @@ def ficha_view(id_ficha):
         return redirect(url_for('ficha_view', id_ficha=id_ficha))
 
     return render_template('ficha/ficha.html', ficha=ficha, pericias=_pericias, editable=editable)
+
+@app.route('/ficha/<string:id_ficha>/levelup', methods=["GET", "POST"])
+@login_required
+def levelup(id_ficha):
+    ficha = Ficha.query.filter_by(uuid=id_ficha).first_or_404()
+    print(id_ficha, ficha)
+    if not ficha.user_id != current_user.id and not current_user.is_admin:
+        flash('Você não tem permissão para acessar essa ficha.', 'alert-danger')
+        return redirect(url_for('home'))
+    if not ficha.level_up:
+        flash('Você não pode upar agora.', 'alert-danger')
+        return redirect(url_for('ficha_load'))
+
+    _levelup_type = "form_pericias_level" if (ficha.nivel + 1) % 2 == 0 else "form_atributos_level"
+    form_levelup = LevelUp_PericiasForm() if _levelup_type == "form_pericias_level" else LevelUp_AtributosForm()
+
+    _pericias = get_pericias(ficha)
+
+    if request.method == "POST" and form_levelup.validate_on_submit():
+        _form = list(request.form.items())[1:-1]
+
+        for campo, valor in _form:
+            if _levelup_type == "form_pericias_level":
+                if campo.lower() == ficha.oficio_nome.lower():
+                    campo_atributo = "p_oficio"
+                else:
+                    campo_atributo = "p_{}".format(campo)
+                
+                if hasattr(ficha, campo_atributo):
+                    setattr(ficha, campo_atributo, getattr(ficha, campo_atributo) + int(valor))
+
+            elif _levelup_type == "form_atributos_level":
+                if campo == "csrf_token":
+                    continue
+                if hasattr(ficha, campo):
+                    setattr(ficha, campo, int(valor))
+        
+        ficha.nivel += 1
+        ficha.level_up = False
+
+        _hp = 2 + ficha.constituicao
+        ficha.vida_maxima = ficha.vida_maxima + _hp
+        ficha.vida_atual = ficha.vida_atual + _hp
+
+        users_database.session.commit()
+
+        flash(f'Parabéns! Seu personagem subiu para o nível {ficha.nivel}!', 'alert-success')
+        return redirect(url_for('ficha_view', id_ficha=ficha.uuid))
+
+    return render_template('ficha/levels/{}.html'.format(_levelup_type),
+                           form_levelup=form_levelup, pericias=_pericias, ficha=ficha)
 
 @app.route('/iniciativas', methods=["GET"])
 @login_required
