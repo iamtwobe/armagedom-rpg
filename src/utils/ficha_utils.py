@@ -30,3 +30,17 @@ def get_pericias(ficha):
         ("História", ficha.p_historia, "Int"),
         ("Vontade", ficha.p_vontade, "Car")
     ]
+
+_pericias_format = {
+    "ciências":"ciencias",
+    "enganação":"enganacao",
+    "intimidação":"intimidacao",
+    "intuição":"intuicao",
+    "investigação":"investigacao",
+    "percepção":"percepcao",
+    "persuasão":"persuasao",
+    "religião":"religiao",
+    "sobrevivência":"sobrevivencia",
+    "tática":"tatica",
+    "história":"historia"
+}

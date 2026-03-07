@@ -8,7 +8,7 @@ from src.app.forms import (
     )
 from flask_login import login_user, logout_user, login_required, current_user
 from src.utils.send_dm_discord import send_dm_to_user
-from src.utils.ficha_utils import get_pericias
+from src.utils.ficha_utils import get_pericias, _pericias_format
 from datetime import datetime, timedelta
 from functools import wraps
 from PIL import Image
@@ -356,8 +356,7 @@ def ficha_view(id_ficha):
 @login_required
 def levelup(id_ficha):
     ficha = Ficha.query.filter_by(uuid=id_ficha).first_or_404()
-    print(id_ficha, ficha)
-    if not ficha.user_id != current_user.id and not current_user.is_admin:
+    if ficha.user_id != current_user.id and not current_user.is_admin:
         flash('Você não tem permissão para acessar essa ficha.', 'alert-danger')
         return redirect(url_for('home'))
     if not ficha.level_up:
@@ -374,6 +373,9 @@ def levelup(id_ficha):
 
         for campo, valor in _form:
             if _levelup_type == "form_pericias_level":
+                if campo in _pericias_format:
+                    campo = _pericias_format[campo]
+
                 if campo.lower() == ficha.oficio_nome.lower():
                     campo_atributo = "p_oficio"
                 else:
@@ -391,7 +393,7 @@ def levelup(id_ficha):
         ficha.nivel += 1
         ficha.level_up = False
 
-        _hp = 2 + ficha.constituicao
+        _hp = ficha.constituicao + 1 if _levelup_type == "form_pericias_level" else 2
         ficha.vida_maxima = ficha.vida_maxima + _hp
         ficha.vida_atual = ficha.vida_atual + _hp
 
